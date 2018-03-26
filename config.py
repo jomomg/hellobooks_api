@@ -1,7 +1,7 @@
 class Config:
     """Parent config class"""
     DEBUG = False
-    SECRET = '!!@#YDGGJGJGKJasdfadsff12526263JGKJH&*&^**IGHBJHB'
+    SECRET_KEY = '!!@#YDGGJGJGKJasdfadsff12526263JGKJH&*&^**IGHBJHB'
 
     @staticmethod
     def init_app(app):
