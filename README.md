@@ -20,5 +20,16 @@ privileges. The complete functionality and with the respective endpoints is list
 |/api/auth/register        |Creates a user account      |POST
 |/api/auth/login           |Logs in a user              |POST
 |/api/auth/logout          |Logs out a user             |POST
-|/api/auth/reset-password  | Password reset             |POST
+|/api/auth/reset-password  |Password reset              |POST
 
+## How to run this application
+
+ - Clone this repository
+ - Set up a virtual environment
+ - Install the apps dependencies by running `pip install -r requirements.txt`
+ - Open a terminal and `cd` into the app's main directory
+ - Run `python run.py`
+ 
+ ## How to run the tests
+ 
+ - Nosetests is recommended. Run `nosetests` in the apps main directory
