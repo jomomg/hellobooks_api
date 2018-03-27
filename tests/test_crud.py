@@ -61,7 +61,7 @@ class CRUDTestCase(unittest.TestCase):
                                          headers={'content-type': 'application/json',
                                                   'Authorization': 'Bearer {}'.format(access_token)})
         self.assertEqual(response_post.status_code, 201)
-        response_get = self.client.get('/api/books')
+        response_get = self.client.get('/api/books', headers={'Authorization': 'Bearer {}'.format(access_token)})
         self.assertEqual(response_get.status_code, 200)
         self.assertIn('American Gods', str(response_get.data))
 
@@ -75,7 +75,8 @@ class CRUDTestCase(unittest.TestCase):
                                              'Authorization': 'Bearer {}'.format(access_token)})
         self.assertEqual(response.status_code, 201)
         json_response = json.loads(response.data)
-        response_get = self.client.get('/api/books/{}'.format(json_response['book_id']))
+        response_get = self.client.get('/api/books/{}'.format(json_response['book_id']),
+                                       headers={'Authorization': 'Bearer {}'.format(access_token)})
         self.assertEqual(response_get.status_code, 200)
         self.assertIn('American Gods', str(response_get.data))
 
@@ -94,7 +95,7 @@ class CRUDTestCase(unittest.TestCase):
                                        headers={'content-type': 'application/json',
                                                 'Authorization': 'Bearer {}'.format(access_token)})
         self.assertEqual(response_put.status_code, 200)
-        response_get = self.client.get('/api/books/123')
+        response_get = self.client.get('/api/books/123', headers={'Authorization': 'Bearer {}'.format(access_token)})
         self.assertIn('science fiction', str(response_get.data))
 
     def test_delete_book(self):
@@ -110,7 +111,7 @@ class CRUDTestCase(unittest.TestCase):
         response_delete = self.client.delete('api/books/345',
                                              headers={'Authorization': 'Bearer {}'.format(access_token)})
         self.assertEqual(response_delete.status_code, 200)
-        response_get = self.client.get('/api/books/345')
+        response_get = self.client.get('/api/books/345', headers={'Authorization': 'Bearer {}'.format(access_token)})
         self.assertEqual(response_get.status_code, 404)
 
 if __name__ == '__main__':
