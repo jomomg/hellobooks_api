@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/jomomg/hellobooks_api.svg?branch=tests)](https://travis-ci.org/jomomg/hellobooks_api)
+[![Build Status](https://travis-ci.org/jomomg/hellobooks_api.svg?branch=develop)](https://travis-ci.org/jomomg/hellobooks_api)
 
 # Hellobooks API
 
