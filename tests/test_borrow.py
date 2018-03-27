@@ -28,27 +28,16 @@ class BorrowTestCase(unittest.TestCase):
     def tearDown(self):
         app.models.books_list = []
 
-    def login_user(self, user_data):
+    def get_access_token(self, user_data):
+        self.client.post('/api/auth/register', data=user_data)
         login = self.client.post('/api/auth/login', data=user_data)
-        return login
-
-    def get_access_token(self, login):
         msg = json.loads(login.data)
         return msg['access_token']
-
-    def register_user(self, user_data):
-        registration = self.client.post('/api/auth/register', data=user_data)
-        return registration
 
     def test_borrow_book(self):
         """test whether a user can borrow a book"""
 
-        register = self.register_user(self.user)
-        self.assertEqual(register.status_code, 201)
-        login = self.login_user(self.user)
-        access_token = self.get_access_token(login)
-        self.assertEqual(login.status_code, 200)
-
+        access_token = self.get_access_token(self.user)
         add_book = self.client.post('/api/books',
                                     data=json.dumps(self.book),
                                     headers={'content-type': 'application/json',
