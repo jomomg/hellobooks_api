@@ -52,6 +52,7 @@ def create_app(config_name):
             return response
 
     @app.route('/api/books', methods=['GET'])
+    @jwt_required
     def get_all_books():
         """Retrieves all books stored in the library"""
 
@@ -123,6 +124,7 @@ def create_app(config_name):
             return response
 
     @app.route('/api/books/<int:id>', methods=['GET'])
+    @jwt_required
     def retrieve_book(id):
         book = Book().get_by_id(id)
         if not book:
