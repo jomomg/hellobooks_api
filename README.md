@@ -12,11 +12,11 @@ privileges. The complete functionality and with the respective endpoints is list
 |Endpoint                  | Functionality              |HTTP method 
 |--------------------------|----------------------------|-------------
 |/api/books                |Add a book                  |POST        
-|/api/books/<bookId>       |modify a book’s information |PUT
-|/api/books/<bookId>      |Remove a book               |DELETE
+|/api/books/*book_id*       |modify a book’s information |PUT
+|/api/books/*book_id*      |Remove a book               |DELETE
 |/api/books                |Retrieves all books         |GET
-|/api/books/<bookId>       |Get a book                  |GET
-|/api/users/books/<bookId> |Borrow a book               |POST
+|/api/books/*book_id*       |Get a book                  |GET
+|/api/users/books/*book_id* |Borrow a book               |POST
 |/api/auth/register        |Creates a user account      |POST
 |/api/auth/login           |Logs in a user              |POST
 |/api/auth/logout          |Logs out a user             |POST
