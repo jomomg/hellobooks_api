@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/jomomg/hellobooks_api.svg?branch=tests)](https://travis-ci.org/jomomg/hellobooks_api)
+
 # Hellobooks API
 
 Hellobooks API is a library management API. It keeps track of books in a library and users who interact with the library. 
