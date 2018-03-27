@@ -33,7 +33,7 @@ privileges. The complete functionality and with the respective endpoints is list
  
 ## Usage
 
- - Use `curl` or Postman to send requests to the app.
+ - Postman can be used to send requests to the app.
  - The app takes requests in JSON and responds in JSON.
  - Authentication is needed to interact with the endpoints.
  - To authenticate, send a JSON request in the form `{"email":"email@example.com", "password":"my_password"}`
