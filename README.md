@@ -12,7 +12,7 @@ privileges. The complete functionality and with the respective endpoints is list
 |Endpoint                  | Functionality              |HTTP method 
 |--------------------------|----------------------------|-------------
 |/api/books                |Add a book                  |POST        
-|/api/books/<bookId>       |modify a book’s information |POST
+|/api/books/<bookId>       |modify a book’s information |PUT
 |/api/books/<bookId>      |Remove a book               |DELETE
 |/api/books                |Retrieves all books         |GET
 |/api/books/<bookId>       |Get a book                  |GET
