@@ -52,6 +52,22 @@ class CRUDTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertIn('American Gods', str(response.data))
 
+    def test_rejects_similar_books(self):
+        """test that the app does not allow addition of books with similar ids"""
+
+        access_token = self.get_access_token(self.user)
+        self.client.post('/api/books',
+                         data=json.dumps(self.book),
+                         headers={'content-type': 'application/json',
+                                  'Authorization': 'Bearer {}'.format(access_token)})
+        add_similar_book = self.client.post('/api/books',
+                                    data=json.dumps(self.book),
+                                    headers={'content-type': 'application/json',
+                                             'Authorization': 'Bearer {}'.format(access_token)})
+        self.assertEqual(add_similar_book.status_code, 202)
+        json_response = json.loads(add_similar_book.data)
+        self.assertEqual(json_response['message'], 'this book already exists')
+
     def test_get_all_books(self):
         """test whether the api can retrieve all books"""
 
