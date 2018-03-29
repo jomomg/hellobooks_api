@@ -37,7 +37,12 @@ def create_app(config_name):
             new_book.subcategory = data.get('subcategory')
             new_book.description = data.get('description')
 
-            new_book.save()
+            similar = [book for book in Book().get_all() if book.id == new_book.id]
+            if similar:
+                return jsonify({'message': 'this book already exists'}), 202
+            else:
+                new_book.save()
+
             response = jsonify({
                 'book_id': new_book.id,
                 'book_title': new_book.title,
