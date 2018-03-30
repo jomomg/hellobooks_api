@@ -17,11 +17,11 @@ class AuthTestCase(unittest.TestCase):
         app.models.users_list = []
 
     def login_user(self, user_data):
-        login = self.client.post('/api/auth/login', data=user_data)
+        login = self.client.post('/api/v1/auth/login', data=user_data)
         return login
 
     def register_user(self, user_data):
-        registration = self.client.post('/api/auth/register', data=user_data)
+        registration = self.client.post('/api/v1/auth/register', data=user_data)
         return registration
 
     def test_user_registration(self):
@@ -75,7 +75,7 @@ class AuthTestCase(unittest.TestCase):
         new_password = {'password': 'new_pass'}
         login_msg = json.loads(login.data)
         access_token = login_msg['access_token']
-        reset = self.client.post('/api/auth/reset-password',
+        reset = self.client.post('/api/v1/auth/reset-password',
                                  data=new_password,
                                  headers={'Authorization': 'Bearer {}'.format(access_token)})
         self.assertEqual(reset.status_code, 200)
@@ -91,7 +91,7 @@ class AuthTestCase(unittest.TestCase):
         self.assertEqual(login.status_code, 200)
         login_msg = json.loads(login.data)
         access_token = login_msg['access_token']
-        logout = self.client.post('/api/auth/logout',
+        logout = self.client.post('/api/v1/auth/logout',
                                   headers={'Authorization': 'Bearer {}'.format(access_token)})
         logout_msg = json.loads(logout.data)
         self.assertEqual(logout.status_code, 200)
