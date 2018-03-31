@@ -8,7 +8,7 @@ from flask_jwt_extended import (create_access_token,
                                 get_raw_jwt)
 
 
-@auth.route('/api/auth/register', methods=['POST'])
+@auth.route('/api/v1/auth/register', methods=['POST'])
 def register_user():
     """Registers a new user"""
 
@@ -33,7 +33,7 @@ def register_user():
             return response
 
 
-@auth.route('/api/auth/login', methods=['POST'])
+@auth.route('/api/v1/auth/login', methods=['POST'])
 def login_user():
     """Logs a user in"""
 
@@ -53,7 +53,7 @@ def login_user():
             return response
 
 
-@auth.route('/api/auth/reset-password', methods=['POST'])
+@auth.route('/api/v1/auth/reset-password', methods=['POST'])
 @jwt_required
 def reset_password():
     """resets a user's password"""
@@ -68,7 +68,7 @@ def reset_password():
     return response
 
 
-@auth.route('/api/auth/logout', methods=['POST'])
+@auth.route('/api/v1/auth/logout', methods=['POST'])
 @jwt_required
 def logout():
     """logs a user out by revoking access token"""
