@@ -1,9 +1,21 @@
 from flask_api import FlaskAPI
-from flask import request, jsonify, abort
+from flask import request, jsonify
 from app.models import Book, User, blacklist
 from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity
 
 from config import app_config
+
+api_docs = """
+<!DOCTYPE html>
+<head>
+  <title>HelloBooks API</title>
+</head>
+<body>
+  <h1> HelloBooks API v1.0</h1>
+  <a href="https://hellobooksapi.docs.apiary.io"><h2>See the documentaion</h2></a>
+</body>
+</html>
+"""
 
 
 def create_app(config_name):
@@ -14,7 +26,11 @@ def create_app(config_name):
     app_config[config_name].init_app(app)
     jwt = JWTManager(app)
 
-    @app.route('/api/books', methods=['POST'])
+    @app.route('/')
+    def home():
+        return api_docs
+
+    @app.route('/api/v1/books', methods=['POST'])
     @jwt_required
     def add_book():
         """Adds a book to the library"""
@@ -56,7 +72,7 @@ def create_app(config_name):
             response.status_code = 201
             return response
 
-    @app.route('/api/books', methods=['GET'])
+    @app.route('/api/v1/books', methods=['GET'])
     @jwt_required
     def get_all_books():
         """Retrieves all books stored in the library"""
@@ -82,7 +98,7 @@ def create_app(config_name):
             response.status_code = 200
             return response
 
-    @app.route('/api/books/<int:id>', methods=['PUT', 'DELETE'])
+    @app.route('/api/v1/books/<int:id>', methods=['PUT', 'DELETE'])
     @jwt_required
     def book_update_delete(id):
         """this function updates or deletes a specific book with a given id"""
@@ -95,7 +111,7 @@ def create_app(config_name):
         #    return jsonify({'message': 'admin only'}), 403
 
         if not book:
-            abort(404)
+            return jsonify({'message': 'book not found'}), 404
 
         if request.method == 'DELETE':
             book.delete()
@@ -103,16 +119,23 @@ def create_app(config_name):
 
         elif request.method == 'PUT':
             data = request.get_json()
-            book.id = data.get('book_id')
-            book.title = data.get('book_title')
-            book.publisher = data.get('publisher')
-            book.publication_year = data.get('publication_year')
-            book.edition = data.get('edition')
-            book.category = data.get('category')
-            book.subcategory = data.get('subcategory')
-            book.description = data.get('description')
 
-            book.save()
+            if data.get('book_id'):
+                book.id = data.get('book_id')
+            if data.get('book_title'):
+                book.title = data.get('book_title')
+            if data.get('publisher'):
+                book.publisher = data.get('publisher')
+            if data.get('publication_year'):
+                book.publication_year = data.get('publication_year')
+            if data.get('edition'):
+                book.edition = data.get('edition')
+            if data.get('category'):
+                book.category = data.get('category')
+            if data.get('subcategory'):
+                book.subcategory = data.get('subcategory')
+            if data.get('description'):
+                book.description = data.get('description')
 
             response = jsonify({
                 'book_id': book.id,
@@ -128,12 +151,13 @@ def create_app(config_name):
             response.status_code = 200
             return response
 
-    @app.route('/api/books/<int:id>', methods=['GET'])
+    @app.route('/api/v1/books/<int:id>', methods=['GET'])
     @jwt_required
     def retrieve_book(id):
         book = Book().get_by_id(id)
+
         if not book:
-            abort(404)
+            return jsonify({'message': 'book not found'}), 404
 
         if request.method == 'GET':
             response = jsonify({
@@ -150,7 +174,7 @@ def create_app(config_name):
             response.status_code = 200
             return response
 
-    @app.route('/api/users/books/<int:book_id>', methods=['POST'])
+    @app.route('/api/v1/users/books/<int:book_id>', methods=['POST'])
     @jwt_required
     def borrow_book(book_id):
         book = Book().get_by_id(book_id)
@@ -158,7 +182,7 @@ def create_app(config_name):
         user = User.get_by_email(current_user_email)
 
         if not book:
-            abort(404)
+            return jsonify({'message': 'book not found'}), 404
 
         if request.method == 'POST':
             user.borrow_book(book.id)
