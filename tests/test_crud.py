@@ -3,8 +3,7 @@
 import unittest
 import json
 
-from app.app import create_app
-import app.models
+from app.app import create_app, db
 
 
 class CRUDTestCase(unittest.TestCase):
@@ -17,6 +16,7 @@ class CRUDTestCase(unittest.TestCase):
         self.client = self.app.test_client()
         self.app_context = self.app.app_context()
         self.app_context.push()
+        db.create_all()
 
         self.book = {
             'book_title': 'American Gods',
@@ -34,10 +34,8 @@ class CRUDTestCase(unittest.TestCase):
         }
 
     def tearDown(self):
-        """Actions to be performed after each test"""
-
-        app.models.books_list = []
-        app.models.users_list = []
+        db.session.remove()
+        db.drop_all()
         self.app_context.pop()
 
     def get_access_token(self, user_data):

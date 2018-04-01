@@ -2,7 +2,7 @@
 
 from werkzeug.security import check_password_hash, generate_password_hash
 import datetime
-from app import db
+from app.app import db
 
 
 blacklist = set()    # token blacklist

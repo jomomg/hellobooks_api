@@ -2,9 +2,7 @@
 
 import unittest
 import json
-
-from app.app import create_app
-import app.models
+from app.app import create_app, db
 
 
 class AuthTestCase(unittest.TestCase):
@@ -15,15 +13,18 @@ class AuthTestCase(unittest.TestCase):
 
         self.app = create_app('testing')
         self.client = self.app.test_client()
+        self.app_context = self.app.app_context()
+        self.app_context.push()
+        db.create_all()
         self.user = {
             'email': 'user@somewhere.com',
             'password': 'user_pass'
         }
 
     def tearDown(self):
-        """Actions to be performed after each test"""
-
-        app.models.users_list = []
+        db.session.remove()
+        db.drop_all()
+        self.app_context.pop()
 
     def login_user(self, user_data):
         """Login helper function"""

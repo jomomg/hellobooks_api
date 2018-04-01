@@ -2,9 +2,7 @@
 
 import unittest
 import json
-
-from app.app import create_app
-import app.models
+from app.app import create_app, db
 
 
 class BorrowTestCase(unittest.TestCase):
@@ -15,6 +13,9 @@ class BorrowTestCase(unittest.TestCase):
 
         self.app = create_app('testing')
         self.client = self.app.test_client()
+        self.app_context = self.app.app_context()
+        self.app_context.push()
+        db.create_all()
         self.book = {
             'book_title': 'Ready Player One',
             'publisher': 'Random House',
@@ -31,9 +32,9 @@ class BorrowTestCase(unittest.TestCase):
         }
 
     def tearDown(self):
-        """Actions to be performed after each test"""
-
-        app.models.books_list = []
+        db.session.remove()
+        db.drop_all()
+        self.app_context.pop()
 
     def get_access_token(self, user_data):
         self.client.post('/api/v1/auth/register', data=user_data)
