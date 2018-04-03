@@ -1,6 +1,7 @@
 import unittest
-from app import create_app
 import json
+
+from app import create_app
 import app.models
 
 
