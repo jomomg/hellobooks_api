@@ -34,7 +34,7 @@ class CRUDTestCase(unittest.TestCase):
         self.app_context.pop()
 
     def get_access_token(self, user_data):
-        """registers, logs in and returns an access token for authentication"""
+        """Registers, logs in and returns an access token for authentication"""
 
         self.client.post('/api/v1/auth/register', data=user_data)
         login = self.client.post('/api/v1/auth/login', data=user_data)
@@ -42,7 +42,7 @@ class CRUDTestCase(unittest.TestCase):
         return msg['access_token']
 
     def test_add_book(self):
-        """test whether the api can add a book"""
+        """Test whether the api can add a book"""
 
         access_token = self.get_access_token(self.user)
         response = self.client.post('/api/v1/books',
@@ -53,7 +53,7 @@ class CRUDTestCase(unittest.TestCase):
         self.assertIn('American Gods', str(response.data))
 
     def test_rejects_similar_books(self):
-        """test that the app does not allow addition of books with similar ids"""
+        """Test that the app does not allow addition of books with similar ids"""
 
         access_token = self.get_access_token(self.user)
         self.client.post('/api/v1/books',
@@ -69,7 +69,7 @@ class CRUDTestCase(unittest.TestCase):
         self.assertEqual(json_response['message'], 'this book already exists')
 
     def test_get_all_books(self):
-        """test whether the api can retrieve all books"""
+        """Test whether the api can retrieve all books"""
 
         access_token = self.get_access_token(self.user)
         response_post = self.client.post('/api/v1/books',
@@ -82,7 +82,7 @@ class CRUDTestCase(unittest.TestCase):
         self.assertIn('American Gods', str(response_get.data))
 
     def test_get_book_by_id(self):
-        """test whether the api can retrieve a book by id"""
+        """Test whether the api can retrieve a book by id"""
 
         access_token = self.get_access_token(self.user)
         response = self.client.post('/api/v1/books',
@@ -97,7 +97,7 @@ class CRUDTestCase(unittest.TestCase):
         self.assertIn('American Gods', str(response_get.data))
 
     def test_modify_book(self):
-        """test whether the api can modify book information"""
+        """Test whether the api can modify book information"""
 
         access_token = self.get_access_token(self.user)
         response_post = self.client.post('/api/v1/books',
@@ -115,7 +115,7 @@ class CRUDTestCase(unittest.TestCase):
         self.assertIn('science fiction', str(response_get.data))
 
     def test_delete_book(self):
-        """test whether the api can delete a book"""
+        """Test whether the api can delete a book"""
 
         self.book['book_id'] = 345
         access_token = self.get_access_token(self.user)
