@@ -1,5 +1,6 @@
 import unittest
 import json
+
 from app import create_app
 import app.models
 
@@ -25,7 +26,7 @@ class AuthTestCase(unittest.TestCase):
         return registration
 
     def test_user_registration(self):
-        """test whether the api can register a user"""
+        """Test whether the api can register a user"""
 
         registration = self.register_user(self.user)
         self.assertEqual(registration.status_code, 201)
@@ -33,7 +34,7 @@ class AuthTestCase(unittest.TestCase):
         self.assertEqual(registration_msg['message'], 'successful registration')
 
     def test_already_registered_user(self):
-        """test that a user cannot be registered twice"""
+        """Test that a user cannot be registered twice"""
 
         registration = self.register_user(self.user)
         self.assertEqual(registration.status_code, 201)
@@ -43,7 +44,7 @@ class AuthTestCase(unittest.TestCase):
         self.assertEqual(result['message'], 'you are already registered')
 
     def test_user_login(self):
-        """test whether a user can login"""
+        """Test whether a user can login"""
 
         registration = self.register_user(self.user)
         self.assertEqual(registration.status_code, 201)
@@ -54,7 +55,7 @@ class AuthTestCase(unittest.TestCase):
         self.assertTrue(login_msg['access_token'])
 
     def test_non_registered_login(self):
-        """test whether a non registered user can login"""
+        """Test whether a non registered user can login"""
 
         another_user = {
             'email': 'another@somewhere.com',
@@ -66,7 +67,7 @@ class AuthTestCase(unittest.TestCase):
         self.assertEqual(login_msg['message'], 'invalid email or password')
 
     def test_password_reset(self):
-        """test whether a user can reset their password"""
+        """Test whether a user can reset their password"""
 
         registration = self.register_user(self.user)
         self.assertEqual(registration.status_code, 201)
@@ -83,7 +84,7 @@ class AuthTestCase(unittest.TestCase):
         self.assertEqual(reset_msg['message'], 'password reset successful')
 
     def test_logout(self):
-        """test whether a user can be successfully logged out"""
+        """Test whether a user can be successfully logged out"""
 
         registration = self.register_user(self.user)
         self.assertEqual(registration.status_code, 201)
