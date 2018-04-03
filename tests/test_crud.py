@@ -67,7 +67,7 @@ class CRUDTestCase(unittest.TestCase):
                                                      'Authorization': 'Bearer {}'.format(access_token)})
         self.assertEqual(add_similar_book.status_code, 202)
         json_response = json.loads(add_similar_book.data)
-        self.assertEqual(json_response['message'], 'this book already exists')
+        self.assertEqual(json_response['message'], 'This book already exists')
 
     def test_get_all_books(self):
         """Test whether the api can retrieve all books"""
