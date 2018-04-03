@@ -8,7 +8,7 @@ blacklist = set()    # token blacklist
 
 
 class Book:
-    """class containing all the book information"""
+    """Class containing all the book information"""
 
     def __init__(self):
         self.id = None
@@ -40,7 +40,7 @@ class Book:
 
 
 class User:
-    """class containing all the user information"""
+    """Class containing all the user information"""
 
     def __init__(self):
         self.id = None
@@ -81,7 +81,7 @@ class User:
 
 
 class BorrowLog:
-    """class containing log of all books borrowed"""
+    """Class containing log of all books borrowed"""
 
     def __init__(self, id, user, book, borrow_date):
         self.id = id
