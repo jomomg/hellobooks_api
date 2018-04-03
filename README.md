@@ -24,12 +24,12 @@ privileges. The complete functionality and with the respective endpoints is list
 
 ## How to run this application
 
- - Clone this repository
- - Set up a virtual environment
+ - Pre-requisites: Python 3.6
+ - Clone this repository `git clone https://github.com/jomomg/hellobooks_api.git`
+ - Set up a virtual environment. `virtualenv` is recommended
  - Install the apps dependencies by running `pip install -r requirements.txt`
- - Open a terminal and `cd` into the app's main directory
+ - Open a terminal and `cd` into the cloned repository
  - Run `python run.py`
- - Python 3.6 is recommended
  
 ## Usage
 
@@ -58,4 +58,8 @@ privileges. The complete functionality and with the respective endpoints is list
  
 ## How to run the tests
  
- - Nosetests is recommended. Run `nosetests` in the apps main directory
+ - Nose is recommended. Run `nosetests` in the apps main directory
+ 
+## More info
+ - API documentation: [https://hellobooksapi.docs.apiary.io](https://hellobooksapi.docs.apiary.io)
+ - API on heroku: [hellobooksapi.herokuapp.com](hellobooksapi.herokuapp.com)
