@@ -1,5 +1,6 @@
 import unittest
 import json
+
 from app import create_app
 import app.models
 
@@ -35,7 +36,7 @@ class BorrowTestCase(unittest.TestCase):
         return msg['access_token']
 
     def test_borrow_book(self):
-        """test whether a user can borrow a book"""
+        """Test whether a user can borrow a book"""
 
         access_token = self.get_access_token(self.user)
         add_book = self.client.post('/api/v1/books',
