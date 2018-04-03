@@ -31,7 +31,7 @@ class AuthTestCase(unittest.TestCase):
         registration = self.register_user(self.user)
         self.assertEqual(registration.status_code, 201)
         registration_msg = json.loads(registration.data)
-        self.assertEqual(registration_msg['message'], 'successful registration')
+        self.assertEqual(registration_msg['message'], 'Successful registration')
 
     def test_already_registered_user(self):
         """Test that a user cannot be registered twice"""
@@ -41,7 +41,7 @@ class AuthTestCase(unittest.TestCase):
         second_registration = self.register_user(self.user)
         self.assertEqual(second_registration.status_code, 202)
         result = json.loads(second_registration.data)
-        self.assertEqual(result['message'], 'you are already registered')
+        self.assertEqual(result['message'], 'This account has already been registered')
 
     def test_user_login(self):
         """Test whether a user can login"""
@@ -51,7 +51,7 @@ class AuthTestCase(unittest.TestCase):
         login = self.login_user(self.user)
         self.assertEqual(login.status_code, 200)
         login_msg = json.loads(login.data)
-        self.assertEqual(login_msg['message'], 'successful login')
+        self.assertEqual(login_msg['message'], 'Successful login')
         self.assertTrue(login_msg['access_token'])
 
     def test_non_registered_login(self):
@@ -64,7 +64,7 @@ class AuthTestCase(unittest.TestCase):
         login = self.login_user(another_user)
         self.assertEqual(login.status_code, 401)
         login_msg = json.loads(login.data)
-        self.assertEqual(login_msg['message'], 'invalid email or password')
+        self.assertEqual(login_msg['message'], 'Invalid email or password')
 
     def test_password_reset(self):
         """Test whether a user can reset their password"""
@@ -81,7 +81,7 @@ class AuthTestCase(unittest.TestCase):
                                  headers={'Authorization': 'Bearer {}'.format(access_token)})
         self.assertEqual(reset.status_code, 200)
         reset_msg = json.loads(reset.data)
-        self.assertEqual(reset_msg['message'], 'password reset successful')
+        self.assertEqual(reset_msg['message'], 'Password reset successful')
 
     def test_logout(self):
         """Test whether a user can be successfully logged out"""
@@ -96,7 +96,7 @@ class AuthTestCase(unittest.TestCase):
                                   headers={'Authorization': 'Bearer {}'.format(access_token)})
         logout_msg = json.loads(logout.data)
         self.assertEqual(logout.status_code, 200)
-        self.assertEqual(logout_msg['message'], 'successfully logged out')
+        self.assertEqual(logout_msg['message'], 'Successfully logged out')
 
 
 if __name__ == '__main__':
