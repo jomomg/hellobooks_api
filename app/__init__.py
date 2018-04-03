@@ -1,8 +1,8 @@
 from flask_api import FlaskAPI
 from flask import request, jsonify
-from app.models import Book, User, blacklist
 from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity
 
+from app.models import Book, User, blacklist
 from config import app_config
 
 api_docs = """
@@ -12,14 +12,14 @@ api_docs = """
 </head>
 <body>
   <h1> HelloBooks API v1.0</h1>
-  <a href="https://hellobooksapi.docs.apiary.io"><h2>See the documentaion</h2></a>
+  <a href="https://hellobooksapi.docs.apiary.io"><h2>See the documentation</h2></a>
 </body>
 </html>
 """
 
 
 def create_app(config_name):
-    """function for creating the application instance"""
+    """Function for creating the application instance"""
 
     app = FlaskAPI(__name__, instance_relative_config=True)
     app.config.from_object(app_config[config_name])
@@ -33,14 +33,9 @@ def create_app(config_name):
     @app.route('/api/v1/books', methods=['POST'])
     @jwt_required
     def add_book():
-        """Adds a book to the library"""
+        """Add a book to the library"""
 
         new_book = Book()
-        # current_user_email = get_jwt_identity()
-        # user = User().get_by_email(current_user_email)
-
-        # if not user.is_admin:
-        #    return jsonify({'message': 'admin only'}), 403
 
         if request.method == 'POST':
             data = request.get_json(force=True)
@@ -55,7 +50,7 @@ def create_app(config_name):
 
             similar = [book for book in Book().get_all() if book.id == new_book.id]
             if similar:
-                return jsonify({'message': 'this book already exists'}), 202
+                return jsonify({'message': 'This book already exists'}), 202
             else:
                 new_book.save()
 
@@ -75,7 +70,7 @@ def create_app(config_name):
     @app.route('/api/v1/books', methods=['GET'])
     @jwt_required
     def get_all_books():
-        """Retrieves all books stored in the library"""
+        """Retrieve all books stored in the library"""
 
         all_books = Book.get_all()
         result = []
@@ -101,21 +96,16 @@ def create_app(config_name):
     @app.route('/api/v1/books/<int:id>', methods=['PUT', 'DELETE'])
     @jwt_required
     def book_update_delete(id):
-        """this function updates or deletes a specific book with a given id"""
+        """Update or delete a specific book with a given id"""
 
         book = Book().get_by_id(id)
-        # current_user_email = get_jwt_identity()
-        # user = User().get_by_email(current_user_email)
-
-        # if not user.is_admin:
-        #    return jsonify({'message': 'admin only'}), 403
 
         if not book:
-            return jsonify({'message': 'book not found'}), 404
+            return jsonify({'message': 'The requested book was not found'}), 404
 
         if request.method == 'DELETE':
             book.delete()
-            return {'message': 'success'}, 200
+            return {'message': 'Successfully deleted'}, 200
 
         elif request.method == 'PUT':
             data = request.get_json()
@@ -154,10 +144,12 @@ def create_app(config_name):
     @app.route('/api/v1/books/<int:id>', methods=['GET'])
     @jwt_required
     def retrieve_book(id):
+        """Retrieve a book using its book id"""
+
         book = Book().get_by_id(id)
 
         if not book:
-            return jsonify({'message': 'book not found'}), 404
+            return jsonify({'message': 'The requested book was not found'}), 404
 
         if request.method == 'GET':
             response = jsonify({
@@ -177,12 +169,14 @@ def create_app(config_name):
     @app.route('/api/v1/users/books/<int:book_id>', methods=['POST'])
     @jwt_required
     def borrow_book(book_id):
+        """Borrow a book from the library"""
+
         book = Book().get_by_id(book_id)
         current_user_email = get_jwt_identity()
         user = User.get_by_email(current_user_email)
 
         if not book:
-            return jsonify({'message': 'book not found'}), 404
+            return jsonify({'message': 'The requested book was not found'}), 404
 
         if request.method == 'POST':
             user.borrow_book(book.id)
