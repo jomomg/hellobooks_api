@@ -1,4 +1,4 @@
-"""test_crud.py: CRUD tests"""
+"""Contains all book CRUD tests"""
 
 import unittest
 import json

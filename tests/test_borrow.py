@@ -1,4 +1,4 @@
-"""test_borrow.py: Borrowing tests"""
+"""Contains all tests related to borrowing tests"""
 
 import unittest
 import json
