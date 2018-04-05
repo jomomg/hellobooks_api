@@ -63,15 +63,16 @@ def login_user():
 
 
 @auth.route('/api/v1/auth/reset-password', methods=['POST'])
-@jwt_required
 def reset_password():
     """Reset a user's password"""
 
-    email = get_jwt_identity()
-    current_user = User().get_by_email(email)
+    email = request.data['email']
+    user = User().get_by_email(email)
+    if not user:
+        return jsonify({'message': 'The user specified was not found'}), 404
     new_password = request.data['password']
 
-    current_user.set_password(new_password)
+    user.set_password(new_password)
     response = jsonify({'message': 'Password reset successful'})
     response.status_code = 200
     return response
