@@ -1,4 +1,4 @@
-"""config.py: Configuration file"""
+"""Application configuration options"""
 
 import datetime
 
