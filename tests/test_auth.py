@@ -85,11 +85,11 @@ class AuthTestCase(unittest.TestCase):
         self.assertEqual(registration.status_code, 201)
         login = self.login_user(self.user)
         self.assertEqual(login.status_code, 200)
-        new_password = {'password': 'new_pass'}
+        self.user['password'] = 'new_pass'
         login_msg = json.loads(login.data)
         access_token = login_msg['access_token']
         reset = self.client.post('/api/v1/auth/reset-password',
-                                 data=new_password,
+                                 data=self.user,
                                  headers={'Authorization': 'Bearer {}'.format(access_token)})
         self.assertEqual(reset.status_code, 200)
         reset_msg = json.loads(reset.data)
