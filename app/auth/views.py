@@ -1,9 +1,8 @@
-"""views.py: Authentication views"""
+"""Contains all authentication views"""
 
 import re
 from flask import request, jsonify
 from flask_jwt_extended import (create_access_token,
-                                get_jwt_identity,
                                 jwt_required,
                                 get_raw_jwt)
 
