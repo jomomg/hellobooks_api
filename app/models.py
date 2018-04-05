@@ -1,4 +1,4 @@
-"""models.py: Models used by the application"""
+"""Contains the models used by the application"""
 
 from werkzeug.security import check_password_hash, generate_password_hash
 import datetime
@@ -22,7 +22,7 @@ class Book:
         self.category = None
         self.subcategory = None
         self.description = None
-        self.available = 0
+        self.available = 1
 
     def save(self, user_books):
         """Save current instance in the books list"""
