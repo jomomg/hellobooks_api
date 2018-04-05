@@ -1,3 +1,5 @@
+"""test_auth.py: Authentication tests"""
+
 import unittest
 import json
 
@@ -6,7 +8,11 @@ import app.models
 
 
 class AuthTestCase(unittest.TestCase):
+    """Authentication test case"""
+
     def setUp(self):
+        """Actions to be performed before each test"""
+
         self.app = create_app('testing')
         self.client = self.app.test_client()
         self.user = {
@@ -15,13 +21,19 @@ class AuthTestCase(unittest.TestCase):
         }
 
     def tearDown(self):
+        """Actions to be performed after each test"""
+
         app.models.users_list = []
 
     def login_user(self, user_data):
+        """Login helper function"""
+
         login = self.client.post('/api/v1/auth/login', data=user_data)
         return login
 
     def register_user(self, user_data):
+        """Registration helper function"""
+
         registration = self.client.post('/api/v1/auth/register', data=user_data)
         return registration
 
