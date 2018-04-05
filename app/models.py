@@ -1,10 +1,13 @@
+"""models.py: Models used by the application"""
+
 from werkzeug.security import check_password_hash, generate_password_hash
 import datetime
 
-users_list = []      # list containing all the users
-books_list = []      # list containing all the books
-borrowing_info = []  # list containing all borrowing information
-blacklist = set()    # token blacklist
+users_list = []
+books_list = []
+borrowing_info = []
+# token blacklist
+blacklist = set()
 
 
 class Book:
@@ -21,22 +24,44 @@ class Book:
         self.description = None
         self.available = 0
 
-    def save(self):
-        books_list.append(self)
+    def save(self, user_books):
+        """Save current instance in the books list"""
 
-    def delete(self):
-        books_list.remove(self)
+        user_books.append(self)
+
+    def delete(self, user_books):
+        """Delete the current instance in the books list"""
+
+        user_books.remove(self)
 
     @staticmethod
-    def get_by_id(book_id):
-        for book in books_list:
+    def get_by_id(book_id, user_books):
+        """Get a book by its id"""
+
+        for book in user_books:
             if book.id == book_id:
                 return book
         return None
 
     @staticmethod
-    def get_all():
-        return books_list
+    def get_all(user_books):
+        """Get all books in the books list"""
+
+        return user_books
+
+    def serialize(self):
+        """Return a JSON object with all the book details"""
+
+        return {
+            'book_id': self.id,
+            'book_title': self.title,
+            'publisher': self.publisher,
+            'publication_year': self.publication_year,
+            'edition': self.edition,
+            'category': self.category,
+            'subcategory': self.subcategory,
+            'description': self.description
+        }
 
 
 class User:
@@ -49,22 +74,28 @@ class User:
         self.email = None
         self.password = None
         self.is_admin = False
+        self.books = []
         self.books_borrowed = []
 
-    def password(self):
-        raise AttributeError
-
     def set_password(self, password):
+        """Generate a password hash"""
+
         self.password = generate_password_hash(password)
 
     def check_password(self, password):
+        """Check if the entered password and the stored password are the same"""
+
         return check_password_hash(self.password, password)
 
     def save(self):
+        """Save current instance in the users list"""
+
         users_list.append(self)
 
-    def borrow_book(self, book_id):
-        book = Book.get_by_id(book_id)
+    def borrow_book(self, book_id, user_books):
+        """Borrow a book"""
+
+        book = Book.get_by_id(book_id, user_books)
         self.books_borrowed.append(book)
         now = datetime.datetime.now()
         record = BorrowLog(id=book.id,
@@ -75,6 +106,8 @@ class User:
 
     @staticmethod
     def get_by_email(email):
+        """Retrieve a user by their email"""
+
         for user in users_list:
             if user.email == email:
                 return user
@@ -85,9 +118,11 @@ class BorrowLog:
 
     def __init__(self, id, user, book, borrow_date):
         self.id = id
-        self.user = user  # user who has borrowed the book
-        self.book = book  # book that has been borrowed
+        self.user = user
+        self.book = book
         self.borrow_date = borrow_date
 
     def save(self):
+        """Save borrowing record"""
+
         borrowing_info.append(self)
