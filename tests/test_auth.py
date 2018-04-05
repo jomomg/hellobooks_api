@@ -1,4 +1,4 @@
-"""test_auth.py: Authentication tests"""
+"""Contains all authentication tests"""
 
 import unittest
 import json
