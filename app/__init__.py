@@ -1,4 +1,4 @@
-"""__init__.py: Main application file"""
+"""Main application file"""
 
 from flask_api import FlaskAPI
 from flask import request, jsonify
