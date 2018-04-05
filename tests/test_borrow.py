@@ -1,3 +1,5 @@
+"""test_borrow.py: Borrowing tests"""
+
 import unittest
 import json
 
@@ -6,8 +8,11 @@ import app.models
 
 
 class BorrowTestCase(unittest.TestCase):
+    """Borrowing tests"""
 
     def setUp(self):
+        """Actions to be performed before each test"""
+
         self.app = create_app('testing')
         self.client = self.app.test_client()
         self.book = {
@@ -27,6 +32,8 @@ class BorrowTestCase(unittest.TestCase):
         }
 
     def tearDown(self):
+        """Actions to be performed after each test"""
+
         app.models.books_list = []
 
     def get_access_token(self, user_data):
