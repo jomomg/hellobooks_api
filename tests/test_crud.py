@@ -1,3 +1,5 @@
+"""test_crud.py: CRUD tests"""
+
 import unittest
 import json
 
@@ -6,8 +8,11 @@ import app.models
 
 
 class CRUDTestCase(unittest.TestCase):
+    """Tests for Creating, Reading, Updating and Deleting a book"""
 
     def setUp(self):
+        """Actions to be performed before each test"""
+
         self.app = create_app('testing')
         self.client = self.app.test_client()
         self.app_context = self.app.app_context()
@@ -30,6 +35,8 @@ class CRUDTestCase(unittest.TestCase):
         }
 
     def tearDown(self):
+        """Actions to be performed after each test"""
+
         app.models.books_list = []
         app.models.users_list = []
         self.app_context.pop()
