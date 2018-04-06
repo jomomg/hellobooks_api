@@ -27,12 +27,12 @@ class Book:
         self.description = description
         self.is_borrowed = False
 
-    def save(self, user_books):
+    def save(self):
         """Save current instance in the books list"""
 
         books_list.append(self)
 
-    def delete(self, user_books):
+    def delete(self):
         """Delete the current instance in the books list"""
 
         books_list.remove(self)
@@ -93,7 +93,7 @@ class User:
 
         users_list.append(self)
 
-    def borrow_book(self, book_id, user_books):
+    def borrow_book(self, book_id):
         """Borrow a book"""
 
         book = Book.get_by_id(book_id)
