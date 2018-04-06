@@ -63,7 +63,7 @@ def create_app(config_name):
             if similar:
                 return jsonify({'message': 'This book already exists'}), 409
             else:
-                new_book.save(user.books)
+                new_book.save()
 
             return jsonify(new_book.serialize()), 201
 
@@ -74,7 +74,7 @@ def create_app(config_name):
 
         all_books = Book.get_all()
         if not all_books:
-            return jsonify({'There were no books found'}), 404
+            return jsonify({'message':'There were no books found'}), 404
         result = []
 
         if request.method == 'GET':
@@ -150,7 +150,7 @@ def create_app(config_name):
             return jsonify({'message': 'This book has already been borrowed'}), 409
 
         if request.method == 'POST':
-            user.borrow_book(book.id, user.books)
+            user.borrow_book(book.id)
             response = jsonify({'message': 'You have successfully borrowed this book',
                                 'book details': [book.serialize()]})
 
