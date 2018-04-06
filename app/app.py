@@ -100,7 +100,7 @@ def create_app(config_name):
                    404
 
         if request.method == 'DELETE':
-            book.delete(user.books)
+            book.delete()
             return jsonify({'message': 'Successfully deleted'}), 204
 
         elif request.method == 'PUT':
