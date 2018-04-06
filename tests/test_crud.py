@@ -3,7 +3,7 @@
 import unittest
 import json
 
-from app import create_app
+from app.app import create_app
 import app.models
 
 
@@ -22,8 +22,8 @@ class CRUDTestCase(unittest.TestCase):
             'book_id': 123,
             'book_title': 'American Gods',
             'publisher': 'Williams Morrow',
-            'publication_year': '2001',
-            'edition': '5',
+            'publication_year': 2001,
+            'edition': 1,
             'category': 'fiction',
             'subcategory': 'fantasy',
             'description': ''
@@ -72,7 +72,7 @@ class CRUDTestCase(unittest.TestCase):
                                             data=json.dumps(self.book),
                                             headers={'content-type': 'application/json',
                                                      'Authorization': 'Bearer {}'.format(access_token)})
-        self.assertEqual(add_similar_book.status_code, 202)
+        self.assertEqual(add_similar_book.status_code, 409)
         json_response = json.loads(add_similar_book.data)
         self.assertEqual(json_response['message'], 'This book already exists')
 
@@ -134,7 +134,7 @@ class CRUDTestCase(unittest.TestCase):
         self.assertEqual(response_post.status_code, 201)
         response_delete = self.client.delete('api/v1/books/345',
                                              headers={'Authorization': 'Bearer {}'.format(access_token)})
-        self.assertEqual(response_delete.status_code, 200)
+        self.assertEqual(response_delete.status_code, 204)
         response_get = self.client.get('/api/v1/books/345', headers={'Authorization': 'Bearer {}'.format(access_token)})
         self.assertEqual(response_get.status_code, 404)
 
