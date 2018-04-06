@@ -13,44 +13,47 @@ blacklist = set()
 class Book:
     """Class containing all the book information"""
 
-    def __init__(self):
-        self.id = None
-        self.title = None
-        self.publisher = None
-        self.publication_year = None
-        self.edition = None
-        self.category = None
-        self.subcategory = None
-        self.description = None
-        self.available = 1
+    def __init__(self, id=0, title='', publisher='', 
+        category='', subcategory='', description='', 
+        pub_year=''):
+
+        self.id = id
+        self.title = title
+        self.publisher = publisher
+        self.publication_year = pub_year
+        self.edition = 1
+        self.category = category
+        self.subcategory = subcategory
+        self.description = description
+        self.is_borrowed = False
 
     def save(self, user_books):
         """Save current instance in the books list"""
 
-        user_books.append(self)
+        books_list.append(self)
 
     def delete(self, user_books):
         """Delete the current instance in the books list"""
 
-        user_books.remove(self)
+        books_list.remove(self)
 
     @staticmethod
-    def get_by_id(book_id, user_books):
+    def get_by_id(book_id):
         """Get a book by its id"""
 
-        for book in user_books:
+        for book in books_list:
             if book.id == book_id:
                 return book
         return None
 
     @staticmethod
-    def get_all(user_books):
+    def get_all():
         """Get all books in the books list"""
 
-        return user_books
+        return books_list
 
     def serialize(self):
-        """Return a JSON object with all the book details"""
+        """Return a dictionary object with all the book details"""
 
         return {
             'book_id': self.id,
@@ -69,8 +72,6 @@ class User:
 
     def __init__(self):
         self.id = None
-        self.first_name = None
-        self.last_name = None
         self.email = None
         self.password = None
         self.is_admin = False
@@ -95,8 +96,9 @@ class User:
     def borrow_book(self, book_id, user_books):
         """Borrow a book"""
 
-        book = Book.get_by_id(book_id, user_books)
+        book = Book.get_by_id(book_id)
         self.books_borrowed.append(book)
+        book.is_borrowed = True
         now = datetime.datetime.now()
         record = BorrowLog(id=book.id,
                            user=self,
