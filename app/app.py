@@ -51,6 +51,7 @@ def create_app(config_name):
             new_book.id = data.get('book_id')
             new_book.title = data.get('book_title')
             new_book.publisher = data.get('publisher')
+            new_book.publication_year = data.get('publication_year')
             new_book.edition = data.get('edition')
             new_book.category = data.get('category')
             new_book.subcategory = data.get('subcategory')
@@ -107,6 +108,7 @@ def create_app(config_name):
             book.id = data.get('book_id')
             book.title = data.get('book_title')
             book.publisher = data.get('publisher')
+            book.publication_year = data.get('publication_year')
             book.edition = data.get('publisher')
             book.category = data.get('category')
             book.subcategory = data.get('subcategory')
@@ -144,6 +146,8 @@ def create_app(config_name):
 
         if not book:
             return jsonify({'message': 'The requested book was not found'}), 404
+        elif book.is_borrowed:
+            return jsonify({'message': 'This book has already been borrowed'}), 409
 
         if request.method == 'POST':
             user.borrow_book(book.id, user.books)
