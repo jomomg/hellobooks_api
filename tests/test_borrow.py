@@ -3,7 +3,7 @@
 import unittest
 import json
 
-from app import create_app
+from app.app import create_app
 import app.models
 
 
@@ -19,8 +19,8 @@ class BorrowTestCase(unittest.TestCase):
             'book_id': 101,
             'book_title': 'Ready Player One',
             'publisher': 'Random House',
-            'publication_year': '2011',
-            'edition': '1',
+            'publication_year': 2011,
+            'edition': 1,
             'category': 'fiction',
             'subcategory': 'science fiction',
             'description': ''
@@ -58,3 +58,23 @@ class BorrowTestCase(unittest.TestCase):
                                                 'Authorization': 'Bearer {}'.format(access_token)})
         self.assertEqual(borrow_book.status_code, 200)
         self.assertIn('Ready Player One', str(borrow_book.data))
+
+    def test_already_borrowed_book(self):
+        """Test that a user cannot borrow a book that has already been borrowed"""
+
+        access_token = self.get_access_token(self.user)
+        add_book = self.client.post('/api/v1/books',
+                                    data=json.dumps(self.book),
+                                    headers={'content-type': 'application/json',
+                                             'Authorization': 'Bearer {}'.format(access_token)})
+        self.assertEqual(add_book.status_code, 201)
+
+        book_data = json.loads(add_book.data)
+        borrow_once = self.client.post('/api/v1/users/books/{}'.format(book_data['book_id']),
+                                       headers={'content-type': 'application/json',
+                                                'Authorization': 'Bearer {}'.format(access_token)})
+        self.assertEqual(borrow_once.status_code, 200)
+        borrow_twice = self.client.post('/api/v1/users/books/{}'.format(book_data['book_id']),
+                                       headers={'content-type': 'application/json',
+                                                'Authorization': 'Bearer {}'.format(access_token)})
+        self.assertEqual(borrow_twice.status_code, 409)
