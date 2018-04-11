@@ -1,0 +1,8 @@
+**.pyc
+migrations/
+.coverage
+.noseids
+**/__pycache__
+.idea
+.vscode
+venv/
