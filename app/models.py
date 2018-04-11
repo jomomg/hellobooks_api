@@ -13,7 +13,9 @@ blacklist = set()
 class Book:
     """Class containing all the book information"""
 
-    def __init__(self, id=0, title='', publisher='', 
+    book_id = 0
+
+    def __init__(self, title='', publisher='', 
         category='', subcategory='', description='', 
         pub_year=''):
 
@@ -27,9 +29,14 @@ class Book:
         self.description = description
         self.is_borrowed = False
 
+    def generate_id(self):
+        Book.book_id += 1
+        self.id = Book.book_id
+
     def save(self):
         """Save current instance in the books list"""
 
+        self.generate_id()
         books_list.append(self)
 
     def delete(self):
