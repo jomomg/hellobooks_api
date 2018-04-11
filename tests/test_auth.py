@@ -110,6 +110,17 @@ class AuthTestCase(unittest.TestCase):
         self.assertEqual(logout.status_code, 200)
         self.assertEqual(logout_msg['message'], 'Successfully logged out')
 
+    def test_register_validation(self):
+        """Test whether the app rejects invalid email or password"""
 
+        self.user['email'] = 'useremail.com'
+        invalid_email = self.register_user(self.user)
+        email_msg = json.loads(invalid_email.data)
+        self.assertEqual('Please enter a valid email address', email_msg['message'])
+        self.user['password'] = '   '
+        invalid_password = self.register_user(self.user)
+        pass_msg = json.loads(invalid_password.data)
+        self.assertEqual('Please enter a valid password', pass_msg['message'])
+        
 if __name__ == '__main__':
     unittest.main()
