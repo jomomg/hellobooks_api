@@ -118,6 +118,7 @@ class AuthTestCase(unittest.TestCase):
         email_msg = json.loads(invalid_email.data)
         self.assertEqual('Please enter a valid email address', email_msg['message'])
         self.user['password'] = '   '
+        self.user['email'] = 'user@email.com'
         invalid_password = self.register_user(self.user)
         pass_msg = json.loads(invalid_password.data)
         self.assertEqual('Please enter a valid password', pass_msg['message'])
