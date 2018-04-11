@@ -19,7 +19,6 @@ class CRUDTestCase(unittest.TestCase):
         self.app_context.push()
 
         self.book = {
-            'book_id': 123,
             'book_title': 'American Gods',
             'publisher': 'Williams Morrow',
             'publication_year': 2001,
@@ -60,11 +59,11 @@ class CRUDTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertIn('American Gods', str(response.data))
 
-    def test_rejects_similar_books(self):
-        """Test that the app does not allow addition of books with similar ids"""
+    def test_generates_unique_ids(self):
+        """Test that the app generates unique books ids"""
 
         access_token = self.get_access_token(self.user)
-        self.client.post('/api/v1/books',
+        add_book = self.client.post('/api/v1/books',
                          data=json.dumps(self.book),
                          headers={'content-type': 'application/json',
                                   'Authorization': 'Bearer {}'.format(access_token)})
@@ -72,9 +71,9 @@ class CRUDTestCase(unittest.TestCase):
                                             data=json.dumps(self.book),
                                             headers={'content-type': 'application/json',
                                                      'Authorization': 'Bearer {}'.format(access_token)})
-        self.assertEqual(add_similar_book.status_code, 409)
-        json_response = json.loads(add_similar_book.data)
-        self.assertEqual(json_response['message'], 'This book already exists')
+        similar_book = json.loads(add_similar_book.data)
+        book = json.loads(add_book.data)
+        self.assertNotEqual(book['book_id'], similar_book['book_id'])
 
     def test_get_all_books(self):
         """Test whether the api can retrieve all books"""
@@ -98,14 +97,14 @@ class CRUDTestCase(unittest.TestCase):
                                     headers={'content-type': 'application/json',
                                              'Authorization': 'Bearer {}'.format(access_token)})
         self.assertEqual(response.status_code, 201)
-        json_response = json.loads(response.data)
-        response_get = self.client.get('/api/v1/books/{}'.format(json_response['book_id']),
+        book_data = json.loads(response.data)
+        response_get = self.client.get('/api/v1/books/{}'.format(book_data['book_id']),
                                        headers={'Authorization': 'Bearer {}'.format(access_token)})
         self.assertEqual(response_get.status_code, 200)
         self.assertIn('American Gods', str(response_get.data))
 
     def test_modify_book(self):
-        """Test whether the api can modify book information"""
+        """Test whether the app can modify book information"""
 
         access_token = self.get_access_token(self.user)
         response_post = self.client.post('/api/v1/books',
@@ -114,25 +113,27 @@ class CRUDTestCase(unittest.TestCase):
                                                   'Authorization': 'Bearer {}'.format(access_token)})
         self.assertEqual(response_post.status_code, 201)
         self.book['subcategory'] = 'science fiction'
-        response_put = self.client.put('/api/v1/books/123',
+        book_data = json.loads(response_post.data)
+        response_put = self.client.put('/api/v1/books/{}'.format(book_data['book_id']),
                                        data=json.dumps(self.book),
                                        headers={'content-type': 'application/json',
                                                 'Authorization': 'Bearer {}'.format(access_token)})
         self.assertEqual(response_put.status_code, 200)
-        response_get = self.client.get('/api/v1/books/123', headers={'Authorization': 'Bearer {}'.format(access_token)})
+        response_get = self.client.get('/api/v1/books/{}'.format(book_data['book_id']),
+                                       headers={'Authorization': 'Bearer {}'.format(access_token)})
         self.assertIn('science fiction', str(response_get.data))
 
     def test_delete_book(self):
         """Test whether the api can delete a book"""
 
-        self.book['book_id'] = 345
         access_token = self.get_access_token(self.user)
         response_post = self.client.post('/api/v1/books',
                                          data=json.dumps(self.book),
                                          headers={'content-type': 'application/json',
                                                   'Authorization': 'Bearer {}'.format(access_token)})
         self.assertEqual(response_post.status_code, 201)
-        response_delete = self.client.delete('api/v1/books/345',
+        book_data = json.loads(response_post.data)
+        response_delete = self.client.delete('api/v1/books/{}'.format(book_data['book_id']),
                                              headers={'Authorization': 'Bearer {}'.format(access_token)})
         self.assertEqual(response_delete.status_code, 204)
         response_get = self.client.get('/api/v1/books/345', headers={'Authorization': 'Bearer {}'.format(access_token)})

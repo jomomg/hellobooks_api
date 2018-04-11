@@ -16,7 +16,6 @@ class BorrowTestCase(unittest.TestCase):
         self.app = create_app('testing')
         self.client = self.app.test_client()
         self.book = {
-            'book_id': 101,
             'book_title': 'Ready Player One',
             'publisher': 'Random House',
             'publication_year': 2011,
