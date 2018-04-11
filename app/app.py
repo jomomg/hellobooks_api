@@ -42,13 +42,10 @@ def create_app(config_name):
     def add_book():
         """Add a book to the library"""
 
-        current_user_email = get_jwt_identity()
-        user = User.get_by_email(current_user_email)
         new_book = Book()
 
         if request.method == 'POST':
             data = request.get_json(force=True)
-            new_book.id = data.get('book_id')
             new_book.title = data.get('book_title')
             new_book.publisher = data.get('publisher')
             new_book.publication_year = data.get('publication_year')
@@ -57,13 +54,7 @@ def create_app(config_name):
             new_book.subcategory = data.get('subcategory')
             new_book.description = data.get('description')
 
-            similar = [book for book in Book.get_all()
-                       if book.id == new_book.id]
-
-            if similar:
-                return jsonify({'message': 'This book already exists'}), 409
-            else:
-                new_book.save()
+            new_book.save()
 
             return jsonify(new_book.serialize()), 201
 
@@ -91,13 +82,10 @@ def create_app(config_name):
     def book_update_delete(book_id):
         """Update or delete a specific book with a given id"""
 
-        current_user_email = get_jwt_identity()
-        user = User.get_by_email(current_user_email)
         book = Book().get_by_id(book_id)
 
         if not book:
-            return jsonify({'message': 'The requested book was not found'}), \
-                   404
+            return jsonify({'message': 'The requested book was not found'}), 404
 
         if request.method == 'DELETE':
             book.delete()
@@ -105,7 +93,6 @@ def create_app(config_name):
 
         elif request.method == 'PUT':
             data = request.get_json(force=True)
-            book.id = data.get('book_id')
             book.title = data.get('book_title')
             book.publisher = data.get('publisher')
             book.publication_year = data.get('publication_year')
