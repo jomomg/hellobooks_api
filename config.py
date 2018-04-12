@@ -9,6 +9,8 @@ class Config:
     DEBUG = False
     SECRET_KEY = '!!@#YDGGJGJGKJasdfadsff12526263JGKJH&*&^**IGHBJHB'
     JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(minutes=60)
+    JWT_BLACKLIST_ENABLED = True
+    JWT_BLACKLIST_TOKEN_CHECKS = ['access']
 
     @staticmethod
     def init_app(app):
