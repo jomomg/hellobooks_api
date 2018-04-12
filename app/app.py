@@ -73,9 +73,7 @@ def create_app(config_name):
                 book_item = book.serialize()
                 result.append(book_item)
 
-            response = jsonify(result)
-            response.status_code = 200
-            return response
+            return jsonify(result), 200
 
     @app.route('/api/v1/books/<int:book_id>', methods=['PUT', 'DELETE'])
     @jwt_required
@@ -101,10 +99,7 @@ def create_app(config_name):
             book.subcategory = data.get('subcategory')
             book.description = data.get('description')
 
-            response = jsonify(book.serialize())
-
-            response.status_code = 200
-            return response
+            return jsonify(book.serialize()), 200
 
     @app.route('/api/v1/books/<int:book_id>', methods=['GET'])
     @jwt_required
@@ -117,10 +112,7 @@ def create_app(config_name):
             return jsonify({'message': 'The requested book was not found'}), 404
 
         if request.method == 'GET':
-            response = jsonify(book.serialize())
-
-            response.status_code = 200
-            return response
+            return jsonify(book.serialize()), 200
 
     @app.route('/api/v1/users/books/<int:book_id>', methods=['POST'])
     @jwt_required
@@ -138,11 +130,8 @@ def create_app(config_name):
 
         if request.method == 'POST':
             user.borrow_book(book.id)
-            response = jsonify({'message': 'You have successfully borrowed this book',
-                                'book details': [book.serialize()]})
-
-            response.status_code = 200
-            return response
+            return jsonify({'message': 'You have successfully borrowed this book',
+                                'book details': [book.serialize()]}), 200
 
     @jwt.token_in_blacklist_loader
     def check_if_token_in_blacklist(token):
