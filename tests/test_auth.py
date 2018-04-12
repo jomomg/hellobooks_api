@@ -51,7 +51,7 @@ class AuthTestCase(unittest.TestCase):
         registration = self.register_user(self.user)
         self.assertEqual(registration.status_code, 201)
         second_registration = self.register_user(self.user)
-        self.assertEqual(second_registration.status_code, 202)
+        self.assertEqual(second_registration.status_code, 409)
         result = json.loads(second_registration.data)
         self.assertEqual(result['message'], 'This account has already been registered')
 
