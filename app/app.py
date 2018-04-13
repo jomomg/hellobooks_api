@@ -2,10 +2,13 @@
 
 from flask_api import FlaskAPI
 from flask import request, jsonify
+from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity
 
 from app.models import Book, User, blacklist
 from config import app_config
+
+db = SQLAlchemy()
 
 API_HOME_PAGE = """
 <!DOCTYPE html>
@@ -29,6 +32,8 @@ def create_app(config_name):
     app.config.from_object(app_config[config_name])
     app_config[config_name].init_app(app)
     app.url_map.strict_slashes = False
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    db.init_app(app)
     jwt = JWTManager(app)
 
     @app.route('/')
