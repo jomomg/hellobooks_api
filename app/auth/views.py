@@ -6,7 +6,8 @@ from flask_jwt_extended import (create_access_token,
                                 jwt_required,
                                 get_raw_jwt)
 
-from app.models import User, blacklist
+from app.models import User
+from app.app import blacklist
 from . import auth
 
 
