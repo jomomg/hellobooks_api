@@ -17,7 +17,7 @@ class BorrowTestCase(unittest.TestCase):
         self.app_context.push()
         db.create_all()
         self.book = {
-            'book_title': 'Ready Player One',
+            'title': 'Ready Player One',
             'publisher': 'Random House',
             'publication_year': 2011,
             'edition': 1,
@@ -53,7 +53,7 @@ class BorrowTestCase(unittest.TestCase):
         self.assertEqual(add_book.status_code, 201)
 
         book_data = json.loads(add_book.data)
-        borrow_book = self.client.post('/api/v1/users/books/{}'.format(book_data['book_id']),
+        borrow_book = self.client.post('/api/v1/users/books/{}'.format(book_data['id']),
                                        headers={'content-type': 'application/json',
                                                 'Authorization': 'Bearer {}'.format(access_token)})
         self.assertEqual(borrow_book.status_code, 200)
@@ -70,11 +70,11 @@ class BorrowTestCase(unittest.TestCase):
         self.assertEqual(add_book.status_code, 201)
 
         book_data = json.loads(add_book.data)
-        borrow_once = self.client.post('/api/v1/users/books/{}'.format(book_data['book_id']),
+        borrow_once = self.client.post('/api/v1/users/books/{}'.format(book_data['id']),
                                        headers={'content-type': 'application/json',
                                                 'Authorization': 'Bearer {}'.format(access_token)})
         self.assertEqual(borrow_once.status_code, 200)
-        borrow_twice = self.client.post('/api/v1/users/books/{}'.format(book_data['book_id']),
-                                       headers={'content-type': 'application/json',
-                                                'Authorization': 'Bearer {}'.format(access_token)})
+        borrow_twice = self.client.post('/api/v1/users/books/{}'.format(book_data['id']),
+                                        headers={'content-type': 'application/json',
+                                                 'Authorization': 'Bearer {}'.format(access_token)})
         self.assertEqual(borrow_twice.status_code, 409)
