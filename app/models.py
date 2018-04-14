@@ -5,9 +5,6 @@ import datetime
 from app.app import db
 
 
-blacklist = set()    # token blacklist
-
-
 class Book(db.Model):
     """class containing all the book information"""
 
@@ -31,6 +28,18 @@ class Book(db.Model):
         db.session.delete(self)
         db.session.commit()
 
+    def populate(self, dict_obj):
+        """Populate attributes with dictionary values"""
+
+        for key in dict_obj:
+            setattr(self, key, dict_obj[key])
+
+    def is_available(self):
+        if self.available >= 1:
+            return True
+        else:
+            return False
+
     @staticmethod
     def get_by_id(book_id):
         return Book.query.get(book_id)
@@ -38,6 +47,14 @@ class Book(db.Model):
     @staticmethod
     def get_all():
         return Book.query.all()
+
+    def serialize(self):
+        """Returns a dictionary containing book information"""
+
+        return {
+            column.key: str(getattr(self, column.key))
+            for column in self.__table__.columns
+        }
 
     def __repr__(self):
         return '<Book: {}>'.format(self.title)
@@ -73,9 +90,15 @@ class User(db.Model):
 
         book = Book.get_by_id(book_id)
         now = datetime.datetime.now()
-        record = BorrowLog(user_id=self.id,
-                           book_id=book.id,
-                           borrow_timestamp=now)
+        return_time = now + datetime.timedelta(days=14)
+        record = BorrowLog(
+            user_id=self.id,
+            book_id=book.id,
+            borrow_timestamp=now,
+            expected_return=return_time,
+            returned=False
+        )
+        book.available -= 1
         record.save()
 
     def return_book(self):
@@ -97,11 +120,13 @@ class BorrowLog(db.Model):
 
     __tablename__ = 'borrow_log'
 
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)  # user who has borrowed the book
-    book_id = db.Column(db.Integer, db.ForeignKey('books.id'), primary_key=True)  # book that has been borrowed
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    book_id = db.Column(db.Integer, db.ForeignKey('books.id'))
     borrow_timestamp = db.Column(db.DateTime)
-    returned = db.Column(db.Boolean)
+    expected_return = db.Column(db.DateTime)
     return_timestamp = db.Column(db.DateTime)
+    returned = db.Column(db.Boolean)
 
     def save(self):
         db.session.add(self)
