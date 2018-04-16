@@ -109,6 +109,5 @@ def borrow_book(book_id):
         return jsonify({'message': 'This book has already been borrowed'}), 409
 
     if request.method == 'POST':
-        user.borrow_book(book.id)
-        return jsonify({'message': 'You have successfully borrowed this book',
-                        'book details': [book.serialize()]}), 200
+        borrow_info = user.borrow_book(book)
+        return jsonify(borrow_info), 200
