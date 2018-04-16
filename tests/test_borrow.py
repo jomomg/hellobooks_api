@@ -57,7 +57,8 @@ class BorrowTestCase(unittest.TestCase):
                                        headers={'content-type': 'application/json',
                                                 'Authorization': 'Bearer {}'.format(access_token)})
         self.assertEqual(borrow_book.status_code, 200)
-        self.assertIn('Ready Player One', str(borrow_book.data))
+        self.assertEqual(json.loads(borrow_book.data)['message'],
+                         'You have successfully borrowed this book')
 
     def test_already_borrowed_book(self):
         """Test that a user cannot borrow a book that has already been borrowed"""
