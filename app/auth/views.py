@@ -15,27 +15,25 @@ from . import auth
 def register_user():
     """Register a new user"""
 
-    if request.method == 'POST':
-        email = request.data['email']
-        password = request.data['password']
-        user = User.get_by_email(email)
+    email = request.data['email']
+    password = request.data['password']
+    user = User.get_by_email(email)
 
-        if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$', email):
-            return jsonify({'message': 'Please enter a valid email address'}), 400
+    if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$', email):
+        return jsonify({'message': 'Please enter a valid email address'}), 400
 
-        if not re.match(r'^[a-zA-Z0-9*&#!@^._%+-]', password):
-            return jsonify({'message': 'Please enter a valid password'}), 400
+    if not re.match(r'^[a-zA-Z0-9*&#!@^._%+-]', password):
+        return jsonify({'message': 'Please enter a valid password'}), 400
 
-        if not user:
-            new_user = User()
-            new_user.email = email
-            new_user.set_password(password)
-            new_user.save()
+    if not user:
+        new_user = User()
+        new_user.email = email
+        new_user.set_password(password)
+        new_user.save()
 
-            return jsonify({'message': 'Successful registration'}), 201
-
-        else:
-            return jsonify({'message': 'This account has already been registered'}), 409
+        return jsonify({'message': 'Successful registration'}), 201
+    else:
+        return jsonify({'message': 'This account has already been registered'}), 409
 
 
 @auth.route('/api/v1/auth/login', methods=['POST'])
