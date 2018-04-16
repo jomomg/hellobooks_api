@@ -2,11 +2,18 @@
 
 from werkzeug.security import check_password_hash, generate_password_hash
 import datetime
+import uuid
 from app.app import db
 
 
+def generate_uuid():
+    """Generate a unique string id"""
+
+    return str(uuid.uuid4())[:8]
+
+
 class Book(db.Model):
-    """class containing all the book information"""
+    """Class containing all the book information"""
 
     __tablename__ = 'books'
 
@@ -35,6 +42,8 @@ class Book(db.Model):
             setattr(self, key, dict_obj[key])
 
     def is_available(self):
+        """Check if a book is available"""
+
         if self.available >= 1:
             return True
         else:
@@ -42,6 +51,8 @@ class Book(db.Model):
 
     @staticmethod
     def get_by_id(book_id):
+        """Return a book object with a given id"""
+
         return Book.query.get(book_id)
 
     @staticmethod
@@ -54,6 +65,7 @@ class Book(db.Model):
         return {
             column.key: str(getattr(self, column.key))
             for column in self.__table__.columns
+            if column.key != 'available'
         }
 
     def __repr__(self):
@@ -82,16 +94,18 @@ class User(db.Model):
         return check_password_hash(self.password, password)
 
     def save(self):
+        """Save to database"""
+
         db.session.add(self)
         db.session.commit()
 
-    def borrow_book(self, book_id):
+    def borrow_book(self, book):
         """Borrow a book"""
 
-        book = Book.get_by_id(book_id)
         now = datetime.datetime.now()
         return_time = now + datetime.timedelta(days=14)
         record = BorrowLog(
+            borrow_id=generate_uuid(),
             user_id=self.id,
             book_id=book.id,
             borrow_timestamp=now,
@@ -100,6 +114,12 @@ class User(db.Model):
         )
         book.available -= 1
         record.save()
+        return {
+            'borrow_id': record.borrow_id,
+            'borrowed_on': record.borrow_timestamp,
+            'expected_return': record.expected_return,
+            'message': 'Successfully borrowed'
+        }
 
     def return_book(self):
         pass
@@ -120,7 +140,7 @@ class BorrowLog(db.Model):
 
     __tablename__ = 'borrow_log'
 
-    id = db.Column(db.Integer, primary_key=True)
+    borrow_id = db.Column(db.String, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     book_id = db.Column(db.Integer, db.ForeignKey('books.id'))
     borrow_timestamp = db.Column(db.DateTime)
