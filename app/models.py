@@ -11,6 +11,8 @@ def generate_uuid():
 
     return str(uuid.uuid4())[:8]
 
+now = datetime.datetime.now()
+
 
 class Book(db.Model):
     """Class containing all the book information"""
@@ -102,7 +104,6 @@ class User(db.Model):
     def borrow_book(self, book):
         """Borrow a book"""
 
-        now = datetime.datetime.now()
         return_time = now + datetime.timedelta(days=14)
         record = BorrowLog(
             borrow_id=generate_uuid(),
@@ -118,14 +119,47 @@ class User(db.Model):
             'borrow_id': record.borrow_id,
             'borrowed_on': record.borrow_timestamp,
             'expected_return': record.expected_return,
-            'message': 'Successfully borrowed'
+            'message': 'You have successfully borrowed this book'
         }
 
-    def return_book(self):
-        pass
+    def get_unreturned(self):
+        """Retrieve all books not yet returned"""
 
-    def borrowing_history(self):
-        pass
+        return [record.book.serialize()
+                for record in self.borrowed_books
+                if record.user_id == self.id]
+
+    @staticmethod
+    def return_book(borrow_id):
+        """Return a borrowed book to the library"""
+
+        book_record = BorrowLog.query.get(borrow_id)
+        if not book_record:
+            return {
+                'message': 'The provided borrow_id was not found.' 
+                           'Make sure you have borrowed this book.'
+            }
+        book_record.return_timestamp = now
+        book_record.returned = True
+        return {
+            'message': 'Book successfully returned',
+            'return_date': book_record.return_timestamp
+        }
+
+    def get_borrowing_history(self):
+        """Get the user's borrowing history"""
+
+        if not self.borrowed_books:
+            return False
+        else:
+            return [{
+                'borrow_id': record.borrow_id,
+                'book_id': record.book_id,
+                'title': record.book.title,
+                'borrowed_on': record.borrow_timestamp,
+                'return_status': record.returned,
+                'returned_on': record.return_timestamp
+            } for record in self.borrowed_books]
 
     @staticmethod
     def get_by_email(email):
@@ -147,6 +181,7 @@ class BorrowLog(db.Model):
     expected_return = db.Column(db.DateTime)
     return_timestamp = db.Column(db.DateTime)
     returned = db.Column(db.Boolean)
+    book = db.relationship('Book', backref='book_assoc')
 
     def save(self):
         db.session.add(self)
