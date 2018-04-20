@@ -6,26 +6,11 @@ from app.models import Book, User
 from . import main
 
 
-API_HOME_PAGE = """
-<!DOCTYPE html>
-<head>
-  <title>HelloBooks API</title>
-</head>
-<body>
-  <h1> HelloBooks API v1.0</h1>
-  <a href="https://hellobooksapi.docs.apiary.io">
-    <h2>See the documentation</h2>
-  </a>
-</body>
-</html>
-"""
-
-
 @main.route('/')
 def home():
     """Return html containing link to documentation"""
 
-    return API_HOME_PAGE
+    return main.send_static_file('/app/static/index.html')
 
 
 @main.route('/api/v1/books', methods=['POST'])
@@ -51,8 +36,8 @@ def get_all_books():
     all_books = Book.get_all()
     if not all_books:
         return jsonify({'message': 'There were no books found'}), 404
-    result = []
 
+    result = []
     if request.method == 'GET':
         for book in all_books:
             book_item = book.serialize()
@@ -94,10 +79,10 @@ def retrieve_book(book_id):
         return jsonify(book.serialize()), 200
 
 
-@main.route('/api/v1/users/books/<int:book_id>', methods=['POST'])
+@main.route('/api/v1/users/books/<int:book_id>', methods=['POST', 'PUT'])
 @jwt_required
-def borrow_book(book_id):
-    """Borrow a book from the library"""
+def borrow_and_return(book_id):
+    """Borrow or return a book from the library"""
 
     current_user_email = get_jwt_identity()
     user = User.get_by_email(current_user_email)
@@ -105,9 +90,43 @@ def borrow_book(book_id):
 
     if not book:
         return jsonify({'message': 'The requested book was not found'}), 404
-    elif not book.is_available():
-        return jsonify({'message': 'This book has already been borrowed'}), 409
 
+    # borrow a book
     if request.method == 'POST':
+        if not book.is_available():
+            return jsonify({'message': 'This book has already been borrowed'}), 409
         borrow_info = user.borrow_book(book)
         return jsonify(borrow_info), 200
+
+    # return a book
+    elif request.method == 'PUT':
+        borrow_id = request.data.get('borrow_id')
+        if not borrow_id:
+            return jsonify({
+                'message': 'The borrow_id must be included in the request when returning a book'
+            }), 400
+
+        else:
+            return_msg = user.return_book(borrow_id)
+            return jsonify(return_msg), 200
+
+
+@main.route('/api/v1/users/books/', methods=['GET'])
+@jwt_required
+def borrowing_history():
+    """Retrieve borrowing history and un-returned books"""
+
+    current_user_email = get_jwt_identity()
+    user = User().get_by_email(current_user_email)
+    returned = request.args.get('returned')
+
+    if returned == 'false':
+        if not user.get_unreturned():
+            return jsonify({'message': 'There are no un-returned books'}), 404
+        else:
+            return jsonify(user.get_unreturned()), 200
+    else:
+        if not user.get_borrowing_history():
+            return jsonify({'message': 'No borrowing history yet'}), 404
+        else:
+            return jsonify(user.get_borrowing_history()), 200
