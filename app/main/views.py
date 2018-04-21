@@ -19,13 +19,10 @@ def add_book():
     """Add a book to the library"""
 
     new_book = Book()
-
-    if request.method == 'POST':
-        data = request.get_json(force=True)
-        new_book.populate(data)
-        new_book.save()
-
-        return jsonify(new_book.serialize()), 201
+    data = request.get_json(force=True)
+    new_book.populate(data)
+    new_book.save()
+    return jsonify(new_book.serialize()), 201
 
 
 @main.route('/api/v1/books', methods=['GET'])
@@ -37,13 +34,8 @@ def get_all_books():
     if not all_books:
         return jsonify({'message': 'There were no books found'}), 404
 
-    result = []
-    if request.method == 'GET':
-        for book in all_books:
-            book_item = book.serialize()
-            result.append(book_item)
-
-        return jsonify(result), 200
+    result = [book.serialize() for book in all_books]
+    return jsonify(result), 200
 
 
 @main.route('/api/v1/books/<int:book_id>', methods=['PUT', 'DELETE'])
@@ -62,7 +54,6 @@ def book_update_delete(book_id):
     elif request.method == 'PUT':
         data = request.get_json(force=True)
         book.populate(data)
-
         return jsonify(book.serialize()), 200
 
 
@@ -74,9 +65,7 @@ def retrieve_book(book_id):
     book = Book.get_by_id(book_id)
     if not book:
         return jsonify({'message': 'The requested book was not found'}), 404
-
-    if request.method == 'GET':
-        return jsonify(book.serialize()), 200
+    return jsonify(book.serialize()), 200
 
 
 @main.route('/api/v1/users/books/<int:book_id>', methods=['POST', 'PUT'])
