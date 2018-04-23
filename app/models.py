@@ -1,6 +1,7 @@
 """Contains the models used by the application"""
 
 from werkzeug.security import check_password_hash, generate_password_hash
+from math import ceil
 import datetime
 import uuid
 from app.app import db
@@ -186,3 +187,30 @@ class BorrowLog(db.Model):
     def save(self):
         db.session.add(self)
         db.session.commit()
+
+
+def group(list_obj, group_len):
+    for i in range(0, len(list_obj), group_len):
+        yield list_obj[i:i+group_len]
+
+
+def get_paginated(limit_param, results, url, page_param):
+    """Return paginated results"""
+
+    page = int(page_param)
+    limit = int(limit_param)
+    page_count = ceil(len(results)/limit)
+    results_paginated = {}
+    if page == 1:
+        results_paginated['previous'] = 'None'
+    else:
+        results_paginated['previous'] = url + '?page={}&limit={}'.format(page-1, limit)
+    if page < page_count:
+        results_paginated['next'] = url + '?page={}&limit={}'.format(page+1, limit)
+    elif page > page_count:
+        raise ValueError('Page number exceeds page count')
+    else:
+        results_paginated['next'] = 'None'
+
+    results_paginated['results'] = list(group(results, limit))[page-1]
+    return results_paginated
