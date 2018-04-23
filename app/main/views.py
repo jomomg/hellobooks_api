@@ -2,7 +2,7 @@
 
 from flask import request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from app.models import Book, User
+from app.models import Book, User, get_paginated
 from . import main
 
 
@@ -30,11 +30,15 @@ def add_book():
 def get_all_books():
     """Retrieve all books stored in the library"""
 
+    limit = request.args.get('limit')
+    page = 1 if not request.args.get('page') else request.args.get('page')
     all_books = Book.get_all()
     if not all_books:
         return jsonify({'message': 'There were no books found'}), 404
 
     result = [book.serialize() for book in all_books]
+    if limit:
+        return jsonify(get_paginated(limit, result, '/api/v1/books', page)), 200
     return jsonify(result), 200
 
 
@@ -108,14 +112,28 @@ def borrowing_history():
     current_user_email = get_jwt_identity()
     user = User().get_by_email(current_user_email)
     returned = request.args.get('returned')
+    limit = request.args.get('limit')
+    page = 1 if not request.args.get('page') else request.args.get('page')
 
     if returned == 'false':
         if not user.get_unreturned():
             return jsonify({'message': 'There are no un-returned books'}), 404
         else:
+            if limit:
+                return jsonify(
+                    get_paginated(limit, user.get_unreturned(), '/api/v1/users/books', page)
+                    ), 200
             return jsonify(user.get_unreturned()), 200
     else:
         if not user.get_borrowing_history():
             return jsonify({'message': 'No borrowing history yet'}), 404
         else:
+            if limit:
+                return jsonify(
+                    get_paginated(
+                        limit, user.get_borrowing_history(), '/api/v1/users/books', page
+                        )
+                    ), 200
             return jsonify(user.get_borrowing_history()), 200
+
+
