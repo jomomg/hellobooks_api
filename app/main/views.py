@@ -38,7 +38,12 @@ def get_all_books():
 
     result = [book.serialize() for book in all_books]
     if limit:
-        return jsonify(get_paginated(limit, result, '/api/v1/books', page)), 200
+        try:
+            paginated = get_paginated(limit, result, '/api/v1/books', page)
+        except ValueError as err:
+            jsonify({'message':'{}'.format(err)}), 400
+        else:
+            return jsonify(paginated), 200
     return jsonify(result), 200
 
 
@@ -53,7 +58,7 @@ def book_update_delete(book_id):
 
     if request.method == 'DELETE':
         book.delete()
-        return jsonify({'message': 'Successfully deleted'}), 204
+        return jsonify({'message': 'You have successfully deleted this book'}), 204
 
     elif request.method == 'PUT':
         data = request.get_json(force=True)
@@ -96,7 +101,7 @@ def borrow_and_return(book_id):
         borrow_id = request.data.get('borrow_id')
         if not borrow_id:
             return jsonify({
-                'message': 'The borrow_id must be included in the request when returning a book'
+                'message': 'The borrow_id must be included in the request body when returning a book'
             }), 400
 
         else:
@@ -115,25 +120,32 @@ def borrowing_history():
     limit = request.args.get('limit')
     page = 1 if not request.args.get('page') else request.args.get('page')
 
+    # get un-returned books
     if returned == 'false':
         if not user.get_unreturned():
-            return jsonify({'message': 'There are no un-returned books'}), 404
+            return jsonify({'message': 'You do not have any un-returned books'}), 404
         else:
             if limit:
-                return jsonify(
-                    get_paginated(limit, user.get_unreturned(), '/api/v1/users/books', page)
-                    ), 200
+                try:
+                    paginated = get_paginated(limit, user.get_unreturned(), '/api/v1/users/books', page)
+                except ValueError as err:
+                    return jsonify({'message': '{}'.format(err)}), 400
+                else:
+                    return jsonify(paginated), 200
+            
             return jsonify(user.get_unreturned()), 200
+
+    # get borrowing history
     else:
         if not user.get_borrowing_history():
-            return jsonify({'message': 'No borrowing history yet'}), 404
+            return jsonify({'message': 'You do not have any borrowing history'}), 404
         else:
             if limit:
-                return jsonify(
-                    get_paginated(
-                        limit, user.get_borrowing_history(), '/api/v1/users/books', page
-                        )
-                    ), 200
+                try:
+                    paginated = get_paginated(limit, user.get_borrowing_history(), '/api/v1/users/books', page)
+                except ValueError as err:
+                    return jsonify({'message': '{}'.format(err)}), 400
+                else:
+                    return jsonify(paginated), 200
+
             return jsonify(user.get_borrowing_history()), 200
-
-
