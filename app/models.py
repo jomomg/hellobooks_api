@@ -200,17 +200,18 @@ def get_paginated(limit_param, results, url, page_param):
     page = int(page_param)
     limit = int(limit_param)
     page_count = ceil(len(results)/limit)
-    results_paginated = {}
+    paginated = {}
     if page == 1:
-        results_paginated['previous'] = 'None'
+        paginated['previous'] = 'None'
     else:
-        results_paginated['previous'] = url + '?page={}&limit={}'.format(page-1, limit)
+        paginated['previous'] = url + '?page={}&limit={}'.format(page-1, limit)
+        
     if page < page_count:
-        results_paginated['next'] = url + '?page={}&limit={}'.format(page+1, limit)
+        paginated['next'] = url + '?page={}&limit={}'.format(page+1, limit)
     elif page > page_count:
         raise ValueError('Page number exceeds page count')
     else:
-        results_paginated['next'] = 'None'
+        paginated['next'] = 'None'
 
-    results_paginated['results'] = list(group(results, limit))[page-1]
-    return results_paginated
+    paginated['results'] = list(group(results, limit))[page-1]
+    return paginated
