@@ -136,10 +136,7 @@ class User(db.Model):
 
         book_record = BorrowLog.query.get(borrow_id)
         if not book_record:
-            return {
-                'message': 'The provided borrow_id was not found.' 
-                           'Make sure you have borrowed this book.'
-            }
+            return False
         book_record.return_timestamp = now
         book_record.returned = True
         return {
@@ -209,7 +206,7 @@ def get_paginated(limit_param, results, url, page_param):
     if page < page_count:
         paginated['next'] = url + '?page={}&limit={}'.format(page+1, limit)
     elif page > page_count:
-        raise ValueError('Page number exceeds page count')
+        return False
     else:
         paginated['next'] = 'None'
 
