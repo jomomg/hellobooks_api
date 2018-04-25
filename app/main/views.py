@@ -38,12 +38,10 @@ def get_all_books():
 
     result = [book.serialize() for book in all_books]
     if limit:
-        try:
-            paginated = get_paginated(limit, result, '/api/v1/books', page)
-        except ValueError as err:
-            jsonify({'message':'{}'.format(err)}), 400
-        else:
-            return jsonify(paginated), 200
+        paginated = get_paginated(limit, result, '/api/v1/books', page)
+        if not paginated:
+            jsonify(message='The page number exceeds the page count'), 400
+        return jsonify(paginated), 200
     return jsonify(result), 200
 
 
@@ -106,6 +104,10 @@ def borrow_and_return(book_id):
 
         else:
             return_msg = user.return_book(borrow_id)
+            if not return_msg:
+                return jsonify(
+                    message='The provided borrow_id was not found. Make sure you have borrowed this book'
+                ), 404
             return jsonify(return_msg), 200
 
 
@@ -126,12 +128,10 @@ def borrowing_history():
             return jsonify({'message': 'You do not have any un-returned books'}), 404
         else:
             if limit:
-                try:
-                    paginated = get_paginated(limit, user.get_unreturned(), '/api/v1/users/books', page)
-                except ValueError as err:
-                    return jsonify({'message': '{}'.format(err)}), 400
-                else:
-                    return jsonify(paginated), 200
+                paginated = get_paginated(limit, user.get_unreturned(), '/api/v1/users/books', page)
+                if not paginated:
+                    return jsonify(message='The page number exceeds the page count'), 400
+                return jsonify(paginated), 200
             
             return jsonify(user.get_unreturned()), 200
 
@@ -141,11 +141,9 @@ def borrowing_history():
             return jsonify({'message': 'You do not have any borrowing history'}), 404
         else:
             if limit:
-                try:
-                    paginated = get_paginated(limit, user.get_borrowing_history(), '/api/v1/users/books', page)
-                except ValueError as err:
-                    return jsonify({'message': '{}'.format(err)}), 400
-                else:
-                    return jsonify(paginated), 200
+                paginated = get_paginated(limit, user.get_borrowing_history(), '/api/v1/users/books', page)
+                if not paginated:
+                    return jsonify(message='The page number exceeds the page count'), 400
+                return jsonify(paginated), 200
 
             return jsonify(user.get_borrowing_history()), 200
