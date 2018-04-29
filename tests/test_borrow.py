@@ -2,6 +2,7 @@
 
 import unittest
 import json
+from flask import current_app
 from app.app import create_app, db
 
 
@@ -26,7 +27,7 @@ class BorrowTestCase(unittest.TestCase):
             'description': ''
         }
         self.user = {
-            'email': 'test@email.com',
+            'email': current_app.config['ADMIN'],
             'password': 'my_pass'
         }
         self.access_token = self.get_access_token(self.user)
@@ -118,14 +119,21 @@ class BorrowTestCase(unittest.TestCase):
 
         add_book = self.add_book()
         book_data = json.loads(add_book.data)
+
+        # no un-returned books present
+        not_returned = self.client.get('/api/v1/users/books?returned=false', headers={
+            'Authorization': 'Bearer {}'.format(self.access_token)
+        })
+        msg = json.loads(not_returned.data)['message']
+        self.assertEqual(msg, 'You do not have any un-returned books')
+        self.assertEqual(not_returned.status_code, 404)
+
+        # un-returned books present
         borrow_book = self.borrow(book_data)
         self.assertEqual(borrow_book.status_code, 200)
-        not_returned = self.client.get(
-            '/api/v1/users/books?returned=false',
-            headers={
+        not_returned = self.client.get('/api/v1/users/books?returned=false', headers={
                 'Authorization': 'Bearer {}'.format(self.access_token)
-            }
-        )
+            })
         self.assertEqual(not_returned.status_code, 200)
         not_returned_data = json.loads(not_returned.data)
         self.assertIn('Ready Player One', str(not_returned_data))
@@ -135,16 +143,24 @@ class BorrowTestCase(unittest.TestCase):
 
         add_book = self.add_book()
         book_data = json.loads(add_book.data)
+
+        # non-existent borrowing history
+        borrow_history = self.client.get('/api/v1/users/books', headers={
+            'content-type': 'application/json',
+            'Authorization': 'Bearer {}'.format(self.access_token)
+        })
+        msg = json.loads(borrow_history.data)['message']
+        self.assertEqual(msg, 'You do not have any borrowing history')
+        self.assertEqual(borrow_history.status_code, 404)
+
+        # borrowing history present
         borrow_book = self.borrow(book_data)
         borrow_info = json.loads(borrow_book.data)
         self.return_book(book_data, borrow_info)
-        borrow_history = self.client.get(
-            '/api/v1/users/books',
-            headers={
+        borrow_history = self.client.get('/api/v1/users/books', headers={
                 'content-type': 'application/json',
                 'Authorization': 'Bearer {}'.format(self.access_token)
-            }
-        )
+            })
         self.assertEqual(borrow_history.status_code, 200)
         borrow_data = json.loads(borrow_history.data)
         self.assertIn('Ready Player One', str(borrow_data))
