@@ -123,6 +123,28 @@ class AuthTestCase(unittest.TestCase):
         invalid_password = self.register_user(self.user)
         pass_msg = json.loads(invalid_password.data)
         self.assertEqual('Please enter a valid password', pass_msg['message'])
-        
+
+    def test_admin_only(self):
+        """Test that only an admin can access admin-only endpoints"""
+
+        user = {'email': 'user@email.com',
+                'password': 'my_pass'}
+        book = {
+            'title': 'American Gods', 'publisher': 'Williams Morrow',
+            'publication_year': 2001, 'edition': 1, 'category': 'fiction',
+            'subcategory': 'fantasy',
+            'description': 'A very good book'
+        }
+        self.client.post('/api/v1/auth/register', data=user)
+        login = self.client.post('/api/v1/auth/login', data=user)
+        access_token = json.loads(login.data)['access_token']
+        rv = self.client.post('/api/v1/books', data=json.dumps(book),
+                              headers={'content-type': 'application/json',
+                                       'Authorization': 'Bearer {}'.format(access_token)})
+        msg = json.loads(rv.data)['message']
+        self.assertEqual(rv.status_code, 403)
+        self.assertEqual(msg, 'You do not have permission to perform this action')
+
+
 if __name__ == '__main__':
     unittest.main()
