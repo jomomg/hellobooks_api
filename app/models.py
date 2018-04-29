@@ -83,7 +83,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String, unique=True)
     password = db.Column(db.String)
-    is_admin = db.Column(db.String)
+    is_admin = db.Column(db.Boolean, default=False)
     borrowed_books = db.relationship('BorrowLog', backref='user')
 
     def set_password(self, password):
@@ -210,5 +210,9 @@ def get_paginated(limit_param, results, url, page_param):
     else:
         paginated['next'] = 'None'
 
-    paginated['results'] = list(group(results, limit))[page-1]
+    for i, value in enumerate(group(results, limit)):
+        if i == (page-1):
+            paginated['results'] = value
+            break
+
     return paginated
