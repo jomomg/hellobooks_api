@@ -1,14 +1,17 @@
 """Contains all authentication views"""
 
 import re
-from flask import request, jsonify
+from functools import wraps
+from flask import request, jsonify, current_app
 from flask_jwt_extended import (create_access_token,
-                                jwt_required,
+                                jwt_required, get_jwt_identity,
                                 get_raw_jwt)
 
 from app.models import User
-from app.app import blacklist
+from app.app import jwt
 from . import auth
+
+blacklist = set()
 
 
 @auth.route('/api/v1/auth/register', methods=['POST'])
@@ -29,6 +32,8 @@ def register_user():
         new_user = User()
         new_user.email = email
         new_user.set_password(password)
+        if email in current_app.config['ADMIN']:
+            new_user.is_admin = True
         new_user.save()
 
         return jsonify({'message': 'Successful registration'}), 201
@@ -76,3 +81,24 @@ def logout():
     jti = get_raw_jwt()['jti']
     blacklist.add(jti)
     return jsonify({'message': 'Successfully logged out'}), 200
+
+
+@jwt.token_in_blacklist_loader
+def check_if_token_in_blacklist(token):
+    """Callback for checking if a token is blacklisted"""
+
+    jti = token['jti']
+    return jti in blacklist
+
+
+def admin_required(func):
+    """Decorator for protecting admin-only endpoints"""
+
+    @wraps(func)
+    def check_admin_status(*args, **kwargs):
+        current_user_email = get_jwt_identity()
+        user = User.get_by_email(current_user_email)
+        if not user.is_admin:
+            return jsonify(message='You do not have permission to perform this action'), 403
+        return func(*args, **kwargs)
+    return check_admin_status
