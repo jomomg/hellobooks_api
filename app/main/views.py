@@ -3,6 +3,7 @@
 from flask import request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.models import Book, User, get_paginated
+from app.auth.views import admin_required
 from . import main
 
 
@@ -15,6 +16,7 @@ def home():
 
 @main.route('/api/v1/books', methods=['POST'])
 @jwt_required
+@admin_required
 def add_book():
     """Add a book to the library"""
 
@@ -40,13 +42,14 @@ def get_all_books():
     if limit:
         paginated = get_paginated(limit, result, '/api/v1/books', page)
         if not paginated:
-            jsonify(message='The page number exceeds the page count'), 400
+            return jsonify(message='The requested page was not found'), 404
         return jsonify(paginated), 200
     return jsonify(result), 200
 
 
 @main.route('/api/v1/books/<int:book_id>', methods=['PUT', 'DELETE'])
 @jwt_required
+@admin_required
 def book_update_delete(book_id):
     """Update or delete a specific book with a given id"""
 
@@ -130,7 +133,7 @@ def borrowing_history():
             if limit:
                 paginated = get_paginated(limit, user.get_unreturned(), '/api/v1/users/books', page)
                 if not paginated:
-                    return jsonify(message='The page number exceeds the page count'), 400
+                    return jsonify(message='The requested page was not found'), 404
                 return jsonify(paginated), 200
             
             return jsonify(user.get_unreturned()), 200
@@ -143,7 +146,7 @@ def borrowing_history():
             if limit:
                 paginated = get_paginated(limit, user.get_borrowing_history(), '/api/v1/users/books', page)
                 if not paginated:
-                    return jsonify(message='The page number exceeds the page count'), 400
+                    return jsonify(message='The requested page was not found'), 404
                 return jsonify(paginated), 200
 
             return jsonify(user.get_borrowing_history()), 200
