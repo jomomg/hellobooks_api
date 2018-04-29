@@ -13,6 +13,7 @@ class Config:
     JWT_BLACKLIST_ENABLED = True
     JWT_BLACKLIST_TOKEN_CHECKS = ['access']
     SQLALCHEMY_DATABASE_URI = 'postgresql:///hellobooks_api'
+    ADMIN = ['overlord@hellobooks.api']
 
     @staticmethod
     def init_app(app):
@@ -31,6 +32,7 @@ class TestingConfig(Config):
     TESTING = True
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = 'postgresql:///test_db'
+
 
 app_config = {
     'development': DevelopmentConfig,
