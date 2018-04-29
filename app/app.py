@@ -7,8 +7,7 @@ from flask_jwt_extended import JWTManager
 from config import app_config
 
 db = SQLAlchemy()
-# token blacklist
-blacklist = set()
+jwt = JWTManager()
 
 
 def create_app(config_name):
@@ -20,14 +19,7 @@ def create_app(config_name):
     app.url_map.strict_slashes = False
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
-    jwt = JWTManager(app)
-
-    @jwt.token_in_blacklist_loader
-    def check_if_token_in_blacklist(token):
-        """Callback for checking if a token is blacklisted"""
-
-        jti = token['jti']
-        return jti in blacklist
+    jwt.init_app(app)
 
     from app.auth import auth
     from app.main import main
