@@ -2,6 +2,7 @@
 
 import unittest
 import json
+from flask import current_app
 
 from app.app import create_app, db
 
@@ -29,7 +30,7 @@ class CRUDTestCase(unittest.TestCase):
         }
 
         self.user = {
-            'email': 'user@earth.com',
+            'email': current_app.config['ADMIN'],
             'password': 'my_pass'
         }
 
@@ -143,36 +144,49 @@ class CRUDTestCase(unittest.TestCase):
         access_token = self.get_access_token(self.user)
         limit = 3
         total = 5
+
         # add a lot of books
         for i in range(1, total+1):
             self.book['title'] = 'Book {}'.format(i)
-            self.client.post('/api/v1/books',
-                            data=json.dumps(self.book),
-                            headers={'content-type': 'application/json',
-                                     'Authorization': 'Bearer {}'.format(access_token)})
+            self.client.post('/api/v1/books', data=json.dumps(self.book),
+                             headers={'content-type': 'application/json',
+                                      'Authorization': 'Bearer {}'.format(access_token)})
 
         # get paginated results
-        paginated = self.client.get(
+        p = self.client.get(
             '/api/v1/books?limit={}'.format(limit), 
             headers={'Authorization': 'Bearer {}'.format(access_token)}
         )
-        paginated_data = json.loads(paginated.data)
-        self.assertEqual(paginated.status_code, 200)
-        self.assertEqual(paginated_data['previous'], 'None')
-        self.assertEqual(paginated_data['next'], '/api/v1/books?page=2&limit={}'.format(limit))
-        self.assertEqual(len(paginated_data['results']), limit)
+        p_next = json.loads(p.data)['next']
+        p_prev = json.loads(p.data)['previous']
+        p_results = json.loads(p.data)['results']
+        self.assertEqual(p.status_code, 200)
+        self.assertEqual(p_prev, 'None')
+        self.assertEqual(p_next, '/api/v1/books?page=2&limit={}'.format(limit))
+        self.assertEqual(len(p_results), limit)
         
         # get the next page
-        next_page = self.client.get(
-            '/api/v1/books?page=2&limit={}'.format(limit), 
-            headers={'Authorization': 'Bearer {}'.format(access_token)}
-        )
-        next_page_data = json.loads(next_page.data)
-        self.assertEqual(next_page.status_code, 200)
-        self.assertEqual(next_page_data['previous'], '/api/v1/books?page=1&limit={}'.format(limit))
-        self.assertEqual(next_page_data['next'], 'None')
-        self.assertEqual(len(next_page_data['results']), total-limit)
-        
+        np = self.client.get('/api/v1/books?page=2&limit={}'.format(limit),
+                             headers={'Authorization': 'Bearer {}'.format(access_token)})
+        np_prev = json.loads(np.data)['previous']
+        np_next = json.loads(np.data)['next']
+        np_results = json.loads(np.data)['results']
+        self.assertEqual(np.status_code, 200)
+        self.assertEqual(np_prev, '/api/v1/books?page=1&limit={}'.format(limit))
+        self.assertEqual(np_next, 'None')
+        self.assertEqual(len(np_results), total-limit)
+
+        # previous page
+        prev = self.client.get(np_prev, headers={'Authorization': 'Bearer {}'.format(access_token)})
+        self.assertEqual(prev.status_code, 200)
+
+        # invalid page number
+        invalid = self.client.get('/api/v1/books?page=5&limit={}'.format(limit),
+                                  headers={'Authorization': 'Bearer {}'.format(access_token)})
+        msg = json.loads(invalid.data)['message']
+        self.assertEqual(msg, 'The requested page was not found')
+        self.assertEqual(invalid.status_code, 404)
+
 
 if __name__ == '__main__':
     unittest.main()
