@@ -14,6 +14,7 @@ class Config:
     JWT_BLACKLIST_TOKEN_CHECKS = ['access']
     SQLALCHEMY_DATABASE_URI = 'postgresql:///hellobooks_api'
     ADMIN = ['overlord@hellobooks.api']
+    BOOK_RETURN_PERIOD = 14  # days
 
     @staticmethod
     def init_app(app):

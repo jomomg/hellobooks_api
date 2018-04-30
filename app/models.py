@@ -1,6 +1,7 @@
 """Contains the models used by the application"""
 
 from werkzeug.security import check_password_hash, generate_password_hash
+from flask import current_app
 from math import ceil
 import datetime
 import uuid
@@ -108,7 +109,8 @@ class User(db.Model):
     def borrow_book(self, book):
         """Borrow a book"""
 
-        return_time = now + datetime.timedelta(days=14)
+        return_time = now + datetime.timedelta(
+            days=current_app.config['BOOK_RETURN_PERIOD'])
         record = BorrowLog(
             borrow_id=generate_uuid(),
             user_id=self.id,
