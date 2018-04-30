@@ -7,12 +7,13 @@ import uuid
 from app.app import db
 
 
+now = datetime.datetime.utcnow()
+
+
 def generate_uuid():
     """Generate a unique string id"""
 
     return str(uuid.uuid4())[:8]
-
-now = datetime.datetime.now()
 
 
 class Book(db.Model):
@@ -28,6 +29,8 @@ class Book(db.Model):
     category = db.Column(db.String)
     subcategory = db.Column(db.String)
     description = db.Column(db.String)
+    added = db.Column(db.DateTime)
+    modified = db.Column(db.DateTime)
     available = db.Column(db.Integer, default=1)
 
     def save(self):
@@ -187,6 +190,8 @@ class BorrowLog(db.Model):
 
 
 def group(list_obj, group_len):
+    """Group objects in a list into lists with length group_len"""
+
     for i in range(0, len(list_obj), group_len):
         yield list_obj[i:i+group_len]
 
