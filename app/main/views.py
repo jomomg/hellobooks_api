@@ -4,6 +4,7 @@ from flask import request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.models import Book, User, get_paginated
 from app.auth.views import admin_required
+import datetime
 from . import main
 
 
@@ -23,6 +24,7 @@ def add_book():
     new_book = Book()
     data = request.get_json(force=True)
     new_book.populate(data)
+    new_book.added = datetime.datetime.utcnow()
     new_book.save()
     return jsonify(new_book.serialize()), 201
 
@@ -64,6 +66,7 @@ def book_update_delete(book_id):
     elif request.method == 'PUT':
         data = request.get_json(force=True)
         book.populate(data)
+        book.modified = datetime.datetime.utcnow()
         return jsonify(book.serialize()), 200
 
 
