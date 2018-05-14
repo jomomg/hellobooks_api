@@ -46,7 +46,8 @@ class Book(db.Model):
         """Populate attributes with dictionary values"""
 
         for key in dict_obj:
-            setattr(self, key, dict_obj[key])
+            if key != 'added' or key != 'modified':
+                setattr(self, key, dict_obj[key])
 
     def is_available(self):
         """Check if a book is available"""
@@ -72,7 +73,6 @@ class Book(db.Model):
         return {
             column.key: str(getattr(self, column.key))
             for column in self.__table__.columns
-            if column.key != 'available'
         }
 
     def __repr__(self):
@@ -133,20 +133,28 @@ class User(db.Model):
 
         return [record.book.serialize()
                 for record in self.borrowed_books
-                if record.user_id == self.id]
+                if record.user_id == self.id and not record.returned]
 
     @staticmethod
-    def return_book(borrow_id):
+    def return_book(borrow_id, user_id, book):
         """Return a borrowed book to the library"""
 
         book_record = BorrowLog.query.get(borrow_id)
         if not book_record:
-            return False
+            return {'message': 'The provided borrow_id was not found. Make sure you have borrowed this book',
+                    'status_code': 404}
+        if book_record.user_id != user_id:
+            return {
+                'message': 'You can only return books that you have borrowed',
+                'status_code': 401
+            }
         book_record.return_timestamp = now
         book_record.returned = True
+        book_record.save()
+        book.available += 1
         return {
-            'message': 'Book successfully returned',
-            'return_date': book_record.return_timestamp
+            'message': 'Book successfully returned on {}'.format(book_record.return_timestamp),
+            'status_code': 200
         }
 
     def get_borrowing_history(self):

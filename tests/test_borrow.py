@@ -111,8 +111,7 @@ class BorrowTestCase(unittest.TestCase):
         borrow_info = json.loads(borrow_book.data)
         return_book = self.return_book(book_data, borrow_info)
         self.assertEqual(return_book.status_code, 200)
-        self.assertEqual(json.loads(return_book.data)['message'],
-                         'Book successfully returned')
+        self.assertIn('Book successfully returned', json.loads(return_book.data)['message'])
 
     def test_not_returned_books(self):
         """Test whether a user's un-returned books can be retrieved"""

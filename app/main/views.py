@@ -67,6 +67,7 @@ def book_update_delete(book_id):
         data = request.get_json(force=True)
         book.populate(data)
         book.modified = datetime.datetime.utcnow()
+        book.save()
         return jsonify(book.serialize()), 200
 
 
@@ -109,12 +110,8 @@ def borrow_and_return(book_id):
             }), 400
 
         else:
-            return_msg = user.return_book(borrow_id)
-            if not return_msg:
-                return jsonify(
-                    message='The provided borrow_id was not found. Make sure you have borrowed this book'
-                ), 404
-            return jsonify(return_msg), 200
+            result = user.return_book(borrow_id, user.id, book)
+            return jsonify(message=result['message']), result['status_code']
 
 
 @main.route('/api/v1/users/books/', methods=['GET'])
