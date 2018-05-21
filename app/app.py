@@ -3,11 +3,13 @@
 from flask_api import FlaskAPI
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
+from flask_mail import Mail
 
 from config import app_config
 
 db = SQLAlchemy()
 jwt = JWTManager()
+mail = Mail()
 
 
 def create_app(config_name):
@@ -20,6 +22,7 @@ def create_app(config_name):
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
     jwt.init_app(app)
+    mail.init_app(app)
 
     from app.auth import auth
     from app.main import main
