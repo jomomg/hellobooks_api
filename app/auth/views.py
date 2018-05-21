@@ -1,20 +1,24 @@
 """Contains all authentication views"""
 
 import re
-from functools import wraps
+import datetime
 from flask import request, jsonify, current_app
 from flask_jwt_extended import (create_access_token,
                                 jwt_required, get_jwt_identity,
-                                get_raw_jwt)
+                                get_raw_jwt, jwt_optional)
+from werkzeug.security import generate_password_hash
+from flask_mail import Message
 
 from app.models import User
-from app.app import jwt
+from app.app import jwt, mail
 from . import auth
+from app.endpoints import Auth
 
 blacklist = set()
+temp = []
 
 
-@auth.route('/api/v1/auth/register', methods=['POST'])
+@auth.route(Auth.REGISTER, methods=['POST'])
 def register_user():
     """Register a new user"""
 
@@ -41,7 +45,7 @@ def register_user():
         return jsonify({'message': 'This account has already been registered'}), 409
 
 
-@auth.route('/api/v1/auth/login', methods=['POST'])
+@auth.route(Auth.LOGIN, methods=['POST'])
 def login_user():
     """Log a user in"""
 
@@ -59,27 +63,53 @@ def login_user():
             return jsonify({'message': 'Invalid email or password'}), 401
 
 
-@auth.route('/api/v1/auth/reset-password', methods=['POST'])
+@auth.route(Auth.RESET_PASSWORD, methods=['POST'])
+@jwt_optional
 def reset_password():
     """Reset a user's password"""
 
-    email = request.data['email']
-    user = User().get_by_email(email)
-    if not user:
-        return jsonify({'message': 'The user specified was not found'}), 404
-    new_password = request.data['password']
+    email = request.data.get('email')
+    new_pass = request.data.get('password')
+    token_id = get_jwt_identity()
 
-    user.set_password(new_password)
-    return jsonify({'message': 'Password reset successful'}), 200
+    if token_id:
+        user = User.get_by_email(token_id)
+        if not user:
+            return jsonify(message='The reset code provided is invalid'), 400
+        else:
+            pass_hash = [item for item in temp if item[0] == user.email][0][1]
+            user.password = pass_hash
+            user.save()
+            revoke_token()
+            for record in temp:
+                if record[0] == user.email:
+                    temp.remove(record)
+            return jsonify(message='Your password has been reset'), 200
+    else:
+        if not email:
+            return jsonify(message='You must provide an email to reset the password'), 400
+        if not new_pass:
+            return jsonify(message='You must provide a new password'), 400
+
+        reset_token = create_access_token(identity=email,
+                                          expires_delta=datetime.timedelta(minutes=10))
+        temp.append((email, generate_password_hash(new_pass)))
+        reset_msg = Message(subject='Password Reset')
+        reset_msg.add_recipient(email)
+        reset_msg.html = '<p>To reset your password, click on the following link: ' \
+                         '<a href={}/api/v1/auth/reset-password?token={}>Reset Password' \
+                         '</a>. Keep in mind the link is only valid for ' \
+                         '10 minutes</p>'.format(current_app.config['DOMAIN'], reset_token)
+        mail.send(reset_msg)
+        return jsonify(message='A reset code has been sent to the email you provided.'), 200
 
 
-@auth.route('/api/v1/auth/logout', methods=['POST'])
+@auth.route(Auth.LOGOUT, methods=['POST'])
 @jwt_required
 def logout():
     """Log a user out by revoking access token"""
 
-    jti = get_raw_jwt()['jti']
-    blacklist.add(jti)
+    revoke_token()
     return jsonify({'message': 'Successfully logged out'}), 200
 
 
@@ -91,14 +121,8 @@ def check_if_token_in_blacklist(token):
     return jti in blacklist
 
 
-def admin_required(func):
-    """Decorator for protecting admin-only endpoints"""
-
-    @wraps(func)
-    def check_admin_status(*args, **kwargs):
-        current_user_email = get_jwt_identity()
-        user = User.get_by_email(current_user_email)
-        if not user.is_admin:
-            return jsonify(message='You do not have permission to perform this action'), 403
-        return func(*args, **kwargs)
-    return check_admin_status
+def revoke_token():
+    jti = get_raw_jwt()['jti']
+    blacklist.add(jti)
+    revoked = True
+    return revoked
