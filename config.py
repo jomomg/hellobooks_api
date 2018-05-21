@@ -21,7 +21,7 @@ class Config:
     DOMAIN = 'http://127.0.0.1:5000'
 
     # mail configuration
-    MAIL_DEFAULT_SENDER = 'jomomg@gmail.com'
+    MAIL_DEFAULT_SENDER = os.environ.get('EMAIL')
     MAIL_SERVER = 'smtp.gmail.com'
     MAIL_PORT = 587
     MAIL_USE_TLS = 1
