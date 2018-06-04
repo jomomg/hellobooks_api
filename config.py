@@ -15,7 +15,7 @@ class Config:
     JWT_BLACKLIST_TOKEN_CHECKS = ['access']
     JWT_TOKEN_LOCATION = ['headers', 'query_string']
     JWT_QUERY_STRING_NAME = 'token'
-    SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/hellobooks_api'
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
     ADMIN = ['jomo@user.com']
     BOOK_RETURN_PERIOD = 14  # days
     DOMAIN = 'http://127.0.0.1:5000'
