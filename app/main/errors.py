@@ -11,7 +11,7 @@ def bad_request(e):
 
 @main.app_errorhandler(404)
 def not_found(e):
-    return jsonify(message='The requested resource was not found')
+    return jsonify(message='The requested resource was not found'), 404
 
 
 @main.app_errorhandler(500)
