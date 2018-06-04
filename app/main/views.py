@@ -10,13 +10,6 @@ from app.endpoints import Main
 from app.utils import return_book
 
 
-@main.route('/')
-def home():
-    """Return html containing link to documentation"""
-
-    return main.send_static_file('/app/static/index.html')
-
-
 @main.route(Main.ADD_BOOK, methods=['POST'])
 @jwt_required
 @admin_required
