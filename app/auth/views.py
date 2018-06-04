@@ -1,6 +1,6 @@
 """Contains all authentication views"""
 
-import re
+
 import datetime
 from flask import request, jsonify, current_app
 from flask_jwt_extended import (create_access_token,
@@ -13,24 +13,20 @@ from app.models import User
 from app.app import jwt, mail
 from . import auth
 from app.endpoints import Auth
+from app.decorators import admin_required, validate_email_password
 
 blacklist = set()
 temp = []
 
 
 @auth.route(Auth.REGISTER, methods=['POST'])
+@validate_email_password
 def register_user():
     """Register a new user"""
 
     email = request.data['email']
     password = request.data['password']
     user = User.get_by_email(email)
-
-    if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$', email):
-        return jsonify({'message': 'Please enter a valid email address'}), 400
-
-    if not re.match(r'^[a-zA-Z0-9*&#!@^._%+-]', password):
-        return jsonify({'message': 'Please enter a valid password'}), 400
 
     if not user:
         new_user = User()
@@ -43,6 +39,36 @@ def register_user():
         return jsonify({'message': 'Successful registration'}), 201
     else:
         return jsonify({'message': 'This account has already been registered'}), 409
+
+
+@auth.route(Auth.REGISTER, methods=['PUT', 'DELETE'])
+@jwt_required
+@admin_required
+def upgrade_downgrade_user():
+    """Upgrade or downgrade a user from a normal user to admin"""
+
+    email = request.data['email']
+    if not email:
+        return jsonify(message='Please provide a user email'), 400
+    user = User.get_by_email(email)
+    if not user:
+        return jsonify(message='The specified user could not be found'), 404
+
+    if request.method == 'PUT':
+        if user.is_admin:
+            return jsonify(message='This user is already an admin'), 409
+        else:
+            user.is_admin = True
+            user.save()
+            return jsonify(message='The user has been upgraded to an admin'), 200
+
+    elif request.method == 'DELETE':
+        if not user.is_admin:
+            return jsonify(message='The user does not have admin privileges')
+        else:
+            user.is_admin = False
+            user.save()
+            return jsonify(message='The user has been downgraded')
 
 
 @auth.route(Auth.LOGIN, methods=['POST'])
@@ -63,8 +89,9 @@ def login_user():
             return jsonify({'message': 'Invalid email or password'}), 401
 
 
-@auth.route(Auth.RESET_PASSWORD, methods=['POST'])
+@auth.route(Auth.RESET_PASSWORD, methods=['POST', 'GET'])
 @jwt_optional
+@validate_email_password
 def reset_password():
     """Reset a user's password"""
 
