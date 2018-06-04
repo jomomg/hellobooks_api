@@ -2,7 +2,6 @@
 
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask import current_app
-from math import ceil
 import datetime
 import uuid
 from app.app import db
@@ -27,6 +26,7 @@ class Book(db.Model):
     publisher = db.Column(db.String)
     publication_year = db.Column(db.String)
     edition = db.Column(db.String)
+    isbn = db.Column(db.String)
     category = db.Column(db.String)
     subcategory = db.Column(db.String)
     description = db.Column(db.String)
@@ -135,28 +135,6 @@ class User(db.Model):
                 for record in self.borrowed_books
                 if record.user_id == self.id and not record.returned]
 
-    @staticmethod
-    def return_book(borrow_id, user_id, book):
-        """Return a borrowed book to the library"""
-
-        book_record = BorrowLog.query.get(borrow_id)
-        if not book_record:
-            return {'message': 'The provided borrow_id was not found. Make sure you have borrowed this book',
-                    'status_code': 404}
-        if book_record.user_id != user_id:
-            return {
-                'message': 'You can only return books that you have borrowed',
-                'status_code': 401
-            }
-        book_record.return_timestamp = now
-        book_record.returned = True
-        book_record.save()
-        book.available += 1
-        return {
-            'message': 'Book successfully returned on {}'.format(book_record.return_timestamp),
-            'status_code': 200
-        }
-
     def get_borrowing_history(self):
         """Get the user's borrowing history"""
 
@@ -194,40 +172,17 @@ class BorrowLog(db.Model):
     returned = db.Column(db.Boolean)
     book = db.relationship('Book', backref='book_assoc')
 
+    def serialize(self):
+        return {
+            'borrow_id': self.borrow_id,
+            'user_id': self.user_id,
+            'book_id': self.book_id,
+            'borrowed': self.borrow_timestamp,
+            'expected_return': self.expected_return,
+            'returned': self.returned,
+            'returned_on:': self.return_timestamp
+        }
+
     def save(self):
         db.session.add(self)
         db.session.commit()
-
-
-def group(list_obj, group_len):
-    """Group objects in a list into lists with length group_len"""
-
-    for i in range(0, len(list_obj), group_len):
-        yield list_obj[i:i+group_len]
-
-
-def get_paginated(limit_param, results, url, page_param):
-    """Return paginated results"""
-
-    page = int(page_param)
-    limit = int(limit_param)
-    page_count = ceil(len(results)/limit)
-    paginated = {}
-    if page == 1:
-        paginated['previous'] = 'None'
-    else:
-        paginated['previous'] = url + '?page={}&limit={}'.format(page-1, limit)
-        
-    if page < page_count:
-        paginated['next'] = url + '?page={}&limit={}'.format(page+1, limit)
-    elif page > page_count:
-        return False
-    else:
-        paginated['next'] = 'None'
-
-    for i, value in enumerate(group(results, limit)):
-        if i == (page-1):
-            paginated['results'] = value
-            break
-
-    return paginated
