@@ -150,7 +150,3 @@ class AuthTestCase(unittest.TestCase):
         msg = json.loads(rv.data)['message']
         self.assertEqual(rv.status_code, 403)
         self.assertEqual(msg, 'You do not have permission to perform this action')
-
-
-if __name__ == '__main__':
-    unittest.main()
