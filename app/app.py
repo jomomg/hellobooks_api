@@ -24,6 +24,12 @@ def create_app(config_name):
     jwt.init_app(app)
     mail.init_app(app)
 
+    @app.route('/')
+    def home():
+        """Return html containing link to documentation"""
+
+        return main.send_static_file('/app/static/index.html')
+
     from app.auth import auth
     from app.main import main
     app.register_blueprint(auth)
