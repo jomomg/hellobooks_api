@@ -28,7 +28,7 @@ def create_app(config_name):
     def home():
         """Return html containing link to documentation"""
 
-        return app.send_static_file('/app/static/index.html')
+        return app.send_static_file('/static/index.html')
 
     from app.auth import auth
     from app.main import main
