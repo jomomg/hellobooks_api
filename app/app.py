@@ -15,7 +15,7 @@ mail = Mail()
 def create_app(config_name):
     """Function for creating the application instance"""
 
-    app = FlaskAPI(__name__, instance_relative_config=True)
+    app = FlaskAPI(__name__, instance_relative_config=True, static_url_path='/app/static/')
     app.config.from_object(app_config[config_name])
     app_config[config_name].init_app(app)
     app.url_map.strict_slashes = False
@@ -28,7 +28,7 @@ def create_app(config_name):
     def home():
         """Return html containing link to documentation"""
 
-        return app.send_static_file('/static/index.html')
+        return app.send_static_file('index.html')
 
     from app.auth import auth
     from app.main import main
