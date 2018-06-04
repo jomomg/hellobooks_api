@@ -2,11 +2,12 @@
 
 from flask import request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from app.models import Book, User
+from app.models import Book, User, BorrowLog
 from app.decorators import admin_required, allow_pagination
 import datetime
 from . import main
 from app.endpoints import Main
+from app.utils import return_book
 
 
 @main.route('/')
@@ -105,7 +106,7 @@ def borrow_and_return(book_id):
             }), 400
 
         else:
-            result = user.return_book(borrow_id, user.id, book)
+            result = return_book(borrow_id, user.id, book)
             return jsonify(message=result['message']), result['status_code']
 
 
@@ -132,3 +133,39 @@ def borrowing_history():
             return jsonify({'message': 'You do not have any borrowing history'}), 404
         else:
             return jsonify(user.get_borrowing_history()), 200
+
+
+@main.route('/api/v1/users/all', methods=['GET'])
+@jwt_required
+@admin_required
+@allow_pagination
+def all_borrowed_books():
+    borrowed_books = BorrowLog.query.filter_by(returned=False).all()
+    results = [book.serialize() for book in borrowed_books]
+    return jsonify(results), 200
+
+
+@main.route('/api/v1/users/all', methods=['PUT'])
+@jwt_required
+@admin_required
+def admin_book_return():
+    borrow_id = request.data.get('borrow_id')
+    if not borrow_id:
+        return jsonify({
+            'message': 'The borrow_id must be included in the request body when returning a book'
+        }), 400
+
+    book = BorrowLog.query.get(borrow_id)
+    if not book:
+        return jsonify({
+            'message': 'The provided borrow_id was not found. Make sure you have borrowed this book'
+        }), 404
+    if book.returned:
+        return jsonify(message='This book has already been returned'), 409
+    book.return_timestamp = datetime.datetime.utcnow()
+    book.returned = True
+    book.save()
+    book.book.available += 1
+    return jsonify({
+        'message': 'Book successfully returned on {}'.format(book.return_timestamp)
+    }), 200
