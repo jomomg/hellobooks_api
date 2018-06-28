@@ -5,7 +5,7 @@ import datetime
 from flask import request, jsonify, current_app
 from flask_jwt_extended import (create_access_token,
                                 jwt_required, get_jwt_identity,
-                                get_raw_jwt, jwt_optional)
+                                get_raw_jwt, create_refresh_token)
 from werkzeug.security import generate_password_hash
 from flask_mail import Message
 
@@ -14,6 +14,7 @@ from app.app import jwt, mail
 from . import auth
 from app.endpoints import Auth
 from app.decorators import admin_required, validate_email_password
+from app.jwt_extensions import refresh_jwt_optional
 
 blacklist = set()
 temp = []
@@ -24,19 +25,27 @@ temp = []
 def register_user():
     """Register a new user"""
 
-    email = request.data['email']
-    password = request.data['password']
+    email = request.data.get('email')
+    password = request.data.get('password')
+    confirm_password = request.data.get('confirm password')
+
     user = User.get_by_email(email)
+
+    if not email or not password or not confirm_password:
+        return jsonify(message='An email, password and confirm password are needed to register'), 400
 
     if not user:
         new_user = User()
         new_user.email = email
-        new_user.set_password(password)
+        if password == confirm_password:
+            new_user.set_password(password)
+        else:
+            return jsonify(message='The passwords you provided do not match'), 400
         if email in current_app.config['ADMIN']:
             new_user.is_admin = True
         new_user.save()
 
-        return jsonify({'message': 'Successful registration'}), 201
+        return jsonify({'message': 'You have successfully registered'}), 201
     else:
         return jsonify({'message': 'This account has already been registered'}), 409
 
@@ -47,7 +56,7 @@ def register_user():
 def upgrade_downgrade_user():
     """Upgrade or downgrade a user from a normal user to admin"""
 
-    email = request.data['email']
+    email = request.data.get('email')
     if not email:
         return jsonify(message='Please provide a user email'), 400
     user = User.get_by_email(email)
@@ -76,8 +85,10 @@ def login_user():
     """Log a user in"""
 
     if request.method == 'POST':
-        email = request.data['email']
-        password = request.data['password']
+        email = request.data.get('email')
+        password = request.data.get('password')
+        if not email or not password:
+            return jsonify(message='Please provide an email and a password'), 400
         user = User.get_by_email(email)
 
         if user and user.check_password(password):
@@ -90,7 +101,7 @@ def login_user():
 
 
 @auth.route(Auth.RESET_PASSWORD, methods=['POST', 'GET'])
-@jwt_optional
+@refresh_jwt_optional
 @validate_email_password
 def reset_password():
     """Reset a user's password"""
@@ -118,8 +129,8 @@ def reset_password():
         if not new_pass:
             return jsonify(message='You must provide a new password'), 400
 
-        reset_token = create_access_token(identity=email,
-                                          expires_delta=datetime.timedelta(minutes=10))
+        reset_token = create_refresh_token(identity=email,
+                                           expires_delta=datetime.timedelta(minutes=10))
         temp.append((email, generate_password_hash(new_pass)))
         reset_msg = Message(subject='Password Reset')
         reset_msg.add_recipient(email)

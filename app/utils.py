@@ -40,25 +40,24 @@ def get_paginated(limit_param, results, url, page_param):
     return paginated
 
 
-def return_book(borrow_id, user_id, book):
+def return_book(user, book):
     """Return a borrowed book to the library"""
 
-    book_record = BorrowLog.query.get(borrow_id)
+    book_record = BorrowLog.query.filter_by(user_id=user.id, book_id=book.id, returned=False).first()
+    if user.is_admin:
+        book_record = BorrowLog.query.filter_by(book_id=book.id, returned=False).first()
     if not book_record:
-        return {'message': 'The provided borrow_id was not found. Make sure you have borrowed this book',
+        return {'message': 'Borrowing record not found. Make sure you have borrowed this book',
                 'status_code': 404}
     if book_record.returned:
         return dict(message='This book has already been returned',
                     status_code=409)
-    if book_record.user_id != user_id:
-        return {
-            'message': 'You can only return books that you have borrowed',
-            'status_code': 401
-        }
+
     book_record.return_timestamp = now
     book_record.returned = True
     book_record.save()
     book.available += 1
+    book.save()
     return {
         'message': 'Book successfully returned on {}'.format(book_record.return_timestamp),
         'status_code': 200

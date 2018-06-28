@@ -20,7 +20,8 @@ class AuthTestCase(unittest.TestCase):
         db.create_all()
         self.user = {
             'email': 'user@somewhere.com',
-            'password': 'user_pass'
+            'password': 'user_pass',
+            'confirm password': 'user_pass'
         }
 
     def tearDown(self):
@@ -46,7 +47,7 @@ class AuthTestCase(unittest.TestCase):
         registration = self.register_user(self.user)
         self.assertEqual(registration.status_code, 201)
         registration_msg = json.loads(registration.data)
-        self.assertEqual(registration_msg['message'], 'Successful registration')
+        self.assertEqual(registration_msg['message'], 'You have successfully registered')
 
     def test_already_registered_user(self):
         """Test that a user cannot be registered twice"""
@@ -134,7 +135,8 @@ class AuthTestCase(unittest.TestCase):
         """Test that only an admin can access admin-only endpoints"""
 
         user = {'email': 'user@email.com',
-                'password': 'my_pass'}
+                'password': 'my_pass',
+                'confirm password': 'my_pass'}
         book = {
             'title': 'American Gods', 'publisher': 'Williams Morrow',
             'publication_year': 2001, 'edition': 1, 'category': 'fiction',

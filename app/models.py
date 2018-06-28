@@ -120,12 +120,12 @@ class User(db.Model):
             returned=False
         )
         book.available -= 1
+        book.save()
         record.save()
         return {
             'borrow_id': record.borrow_id,
             'borrowed_on': record.borrow_timestamp,
-            'expected_return': record.expected_return,
-            'message': 'You have successfully borrowed this book'
+            'expected_return': record.expected_return
         }
 
     def get_unreturned(self):

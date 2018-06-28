@@ -9,13 +9,13 @@ class Config:
 
     DEBUG = False
     CSRF_ENABLED = True
-    SECRET_KEY = '!!@#YDGGJGJGKJasdfadsff12526263JGKJH&*&^**IGHBJHB'
+    SECRET_KEY = os.environ.get('SECRET_KEY')
     JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(minutes=60)
     JWT_BLACKLIST_ENABLED = True
     JWT_BLACKLIST_TOKEN_CHECKS = ['access']
     JWT_TOKEN_LOCATION = ['headers', 'query_string']
     JWT_QUERY_STRING_NAME = 'token'
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
+    SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/hellobooks_api'
     ADMIN = ['jomo@user.com']
     BOOK_RETURN_PERIOD = 14  # days
     DOMAIN = 'http://127.0.0.1:5000'

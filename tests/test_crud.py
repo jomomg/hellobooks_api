@@ -31,7 +31,8 @@ class CRUDTestCase(unittest.TestCase):
 
         self.user = {
             'email': current_app.config['ADMIN'],
-            'password': 'my_pass'
+            'password': 'mypass',
+            'confirm password': 'mypass'
         }
 
     def tearDown(self):
@@ -84,7 +85,7 @@ class CRUDTestCase(unittest.TestCase):
                                     data=json.dumps(self.book),
                                     headers={'content-type': 'application/json',
                                              'Authorization': 'Bearer {}'.format(access_token)})
-        book_data = json.loads(response.data)
+        book_data = json.loads(response.data)['details']
         response_get = self.client.get('/api/v1/books/{}'.format(book_data['id']),
                                        headers={'Authorization': 'Bearer {}'.format(access_token)})
         self.assertEqual(response_get.status_code, 200)
@@ -99,7 +100,7 @@ class CRUDTestCase(unittest.TestCase):
                                          headers={'content-type': 'application/json',
                                                   'Authorization': 'Bearer {}'.format(access_token)})
         self.book['subcategory'] = 'science fiction'
-        book_data = json.loads(response_post.data)
+        book_data = json.loads(response_post.data)['details']
         response_put = self.client.put('/api/v1/books/{}'.format(book_data['id']),
                                        data=json.dumps(self.book),
                                        headers={'content-type': 'application/json',
@@ -117,7 +118,7 @@ class CRUDTestCase(unittest.TestCase):
                                          data=json.dumps(self.book),
                                          headers={'content-type': 'application/json',
                                                   'Authorization': 'Bearer {}'.format(access_token)})
-        book_data = json.loads(response_post.data)
+        book_data = json.loads(response_post.data)['details']
         response_delete = self.client.delete('api/v1/books/{}'.format(book_data['id']),
                                              headers={'Authorization': 'Bearer {}'.format(access_token)})
         self.assertEqual(response_delete.status_code, 204)

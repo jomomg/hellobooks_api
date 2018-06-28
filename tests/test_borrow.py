@@ -28,7 +28,8 @@ class BorrowTestCase(unittest.TestCase):
         }
         self.user = {
             'email': current_app.config['ADMIN'],
-            'password': 'my_pass'
+            'password': 'mypass',
+            'confirm password': 'mypass'
         }
         self.access_token = self.get_access_token(self.user)
 
@@ -50,7 +51,7 @@ class BorrowTestCase(unittest.TestCase):
     def add_book(self):
         """Add a book"""
 
-        return self.client.post(
+        res = self.client.post(
             '/api/v1/books',
             data=json.dumps(self.book),
             headers={
@@ -58,6 +59,7 @@ class BorrowTestCase(unittest.TestCase):
                 'Authorization': 'Bearer {}'.format(self.access_token)
             }
         )
+        return json.loads(res.data)['details']
 
     def borrow(self, book_data):
         """Borrow a book"""
@@ -75,7 +77,6 @@ class BorrowTestCase(unittest.TestCase):
 
         return self.client.put(
             '/api/v1/users/books/{}'.format(book_data['id']),
-            data=json.dumps({'borrow_id': borrow_info['borrow_id']}),
             headers={
                 'content-type': 'application/json',
                 'Authorization': 'Bearer {}'.format(self.access_token)
@@ -85,8 +86,7 @@ class BorrowTestCase(unittest.TestCase):
     def test_borrow_book(self):
         """Test whether a user can borrow a book"""
 
-        add_book = self.add_book()
-        book_data = json.loads(add_book.data)
+        book_data = self.add_book()
         borrow_book = self.borrow(book_data)
         self.assertEqual(borrow_book.status_code, 200)
         self.assertEqual(json.loads(borrow_book.data)['message'],
@@ -95,8 +95,7 @@ class BorrowTestCase(unittest.TestCase):
     def test_already_borrowed_book(self):
         """Test whether a user can borrow a book that has already been borrowed"""
 
-        add_book = self.add_book()
-        book_data = json.loads(add_book.data)
+        book_data = self.add_book()
         borrow_once = self.borrow(book_data)
         self.assertEqual(borrow_once.status_code, 200)
         borrow_twice = self.borrow(book_data)
@@ -105,8 +104,7 @@ class BorrowTestCase(unittest.TestCase):
     def test_book_return(self):
         """Test whether a borrowed book can be returned"""
 
-        add_book = self.add_book()
-        book_data = json.loads(add_book.data)
+        book_data = self.add_book()
         borrow_book = self.borrow(book_data)
         borrow_info = json.loads(borrow_book.data)
         return_book = self.return_book(book_data, borrow_info)
@@ -116,8 +114,7 @@ class BorrowTestCase(unittest.TestCase):
     def test_not_returned_books(self):
         """Test whether a user's un-returned books can be retrieved"""
 
-        add_book = self.add_book()
-        book_data = json.loads(add_book.data)
+        book_data = self.add_book()
 
         # no un-returned books present
         not_returned = self.client.get('/api/v1/users/books?returned=false', headers={
@@ -140,8 +137,7 @@ class BorrowTestCase(unittest.TestCase):
     def test_borrowing_history(self):
         """Test whether a user can get their borrowing history"""
 
-        add_book = self.add_book()
-        book_data = json.loads(add_book.data)
+        book_data = self.add_book()
 
         # non-existent borrowing history
         borrow_history = self.client.get('/api/v1/users/books', headers={

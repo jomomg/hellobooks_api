@@ -18,10 +18,18 @@ def add_book():
 
     new_book = Book()
     data = request.get_json(force=True)
+    if not data or not data.get('title'):
+        return jsonify(message='You must provide at least the title of the book'), 400
+    similar = Book.query.filter_by(isbn=data.get('isbn')).first()
+    if similar and similar.isbn:
+        similar.available += 1
+        similar.save()
+        return jsonify(message='You have successfully added this book'), 201
     new_book.populate(data)
     new_book.added = datetime.datetime.utcnow()
     new_book.save()
-    return jsonify(new_book.serialize()), 201
+    return jsonify(message='You have successfully added this book',
+                   details=new_book.serialize()), 201
 
 
 @main.route(Main.ALL_BOOKS, methods=['GET'])
@@ -54,10 +62,16 @@ def book_update_delete(book_id):
 
     elif request.method == 'PUT':
         data = request.get_json(force=True)
+        similar = Book.query.filter_by(isbn=data.get('isbn')).first()
+        if similar and similar.isbn:
+            similar.available += 1
+            similar.save()
+            return jsonify(message='A new copy of this book has been added'), 200
         book.populate(data)
         book.modified = datetime.datetime.utcnow()
         book.save()
-        return jsonify(book.serialize()), 200
+        return jsonify(message='You have successfully edited this book',
+                       details=book.serialize()), 200
 
 
 @main.route(Main.GET_BOOK, methods=['GET'])
@@ -87,20 +101,17 @@ def borrow_and_return(book_id):
     if request.method == 'POST':
         if not book.is_available():
             return jsonify({'message': 'This book has already been borrowed'}), 409
+        book_record = BorrowLog.query.filter_by(user_id=user.id, book_id=book.id, returned=False).first()
+        if book_record:
+            return jsonify(message='You cannot borrow the same book twice'), 403
         borrow_info = user.borrow_book(book)
-        return jsonify(borrow_info), 200
+        return jsonify(message='You have successfully borrowed this book',
+                       details=borrow_info), 200
 
     # return a book
     elif request.method == 'PUT':
-        borrow_id = request.data.get('borrow_id')
-        if not borrow_id:
-            return jsonify({
-                'message': 'The borrow_id must be included in the request body when returning a book'
-            }), 400
-
-        else:
-            result = return_book(borrow_id, user.id, book)
-            return jsonify(message=result['message']), result['status_code']
+        result = return_book(user, book)
+        return jsonify(message=result['message']), result['status_code']
 
 
 @main.route(Main.BORROWING_HISTORY, methods=['GET'])
@@ -128,37 +139,13 @@ def borrowing_history():
             return jsonify(user.get_borrowing_history()), 200
 
 
-@main.route('/api/v1/users/all', methods=['GET'])
+@main.route('/api/v1/users/all/', methods=['GET'])
 @jwt_required
 @admin_required
 @allow_pagination
 def all_borrowed_books():
-    borrowed_books = BorrowLog.query.filter_by(returned=False).all()
+    """Returns all borrowed books"""
+
+    borrowed_books = BorrowLog.query.all()
     results = [book.serialize() for book in borrowed_books]
     return jsonify(results), 200
-
-
-@main.route('/api/v1/users/all', methods=['PUT'])
-@jwt_required
-@admin_required
-def admin_book_return():
-    borrow_id = request.data.get('borrow_id')
-    if not borrow_id:
-        return jsonify({
-            'message': 'The borrow_id must be included in the request body when returning a book'
-        }), 400
-
-    book = BorrowLog.query.get(borrow_id)
-    if not book:
-        return jsonify({
-            'message': 'The provided borrow_id was not found. Make sure you have borrowed this book'
-        }), 404
-    if book.returned:
-        return jsonify(message='This book has already been returned'), 409
-    book.return_timestamp = datetime.datetime.utcnow()
-    book.returned = True
-    book.save()
-    book.book.available += 1
-    return jsonify({
-        'message': 'Book successfully returned on {}'.format(book.return_timestamp)
-    }), 200
