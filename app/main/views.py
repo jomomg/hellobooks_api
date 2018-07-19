@@ -33,7 +33,6 @@ def add_book():
 
 
 @main.route(Main.ALL_BOOKS, methods=['GET'])
-@jwt_required
 @allow_pagination
 def get_all_books():
     """Retrieve all books stored in the library"""
