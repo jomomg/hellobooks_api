@@ -1,6 +1,5 @@
 [![Build Status](https://travis-ci.org/jomomg/hellobooks_api.svg?branch=develop)](https://travis-ci.org/jomomg/hellobooks_api)
 [![Coverage Status](https://coveralls.io/repos/github/jomomg/hellobooks_api/badge.svg?branch=master)](https://coveralls.io/github/jomomg/hellobooks_api?branch=master)
-[![Maintainability](https://api.codeclimate.com/v1/badges/fa5dba00c1ba55caa0eb/maintainability)](https://codeclimate.com/github/jomomg/hellobooks_api/maintainability)
 
 # Hellobooks API
 
