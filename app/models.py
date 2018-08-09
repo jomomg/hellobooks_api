@@ -86,6 +86,8 @@ class User(db.Model):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
+    first_name = db.Column(db.String)
+    last_name = db.Column(db.String)
     email = db.Column(db.String, unique=True)
     password = db.Column(db.String)
     is_admin = db.Column(db.Boolean, default=False)
@@ -116,6 +118,7 @@ class User(db.Model):
             borrow_id=generate_uuid(),
             user_id=self.id,
             book_id=book.id,
+            book_title=book.title,
             borrow_timestamp=now,
             expected_return=return_time,
             returned=False
@@ -132,9 +135,10 @@ class User(db.Model):
     def get_unreturned(self):
         """Retrieve all books not yet returned"""
 
-        return [record.book.serialize()
+        unreturned = [record.book_id
                 for record in self.borrowed_books
                 if record.user_id == self.id and not record.returned]
+        return [Book().get_by_id(id).serialize() for id in unreturned]
 
     def get_borrowing_history(self):
         """Get the user's borrowing history"""
@@ -145,7 +149,7 @@ class User(db.Model):
             return [{
                 'borrow_id': record.borrow_id,
                 'book_id': record.book_id,
-                'title': record.book.title,
+                'title': record.book_title,
                 'borrowed_on': record.borrow_timestamp,
                 'return_status': record.returned,
                 'returned_on': record.return_timestamp
@@ -166,12 +170,12 @@ class BorrowLog(db.Model):
 
     borrow_id = db.Column(db.String, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    book_id = db.Column(db.Integer, db.ForeignKey('books.id'))
+    book_id = db.Column(db.Integer)
+    book_title = db.Column(db.String)
     borrow_timestamp = db.Column(db.DateTime)
     expected_return = db.Column(db.DateTime)
     return_timestamp = db.Column(db.DateTime)
     returned = db.Column(db.Boolean)
-    book = db.relationship('Book', backref='book_assoc')
 
     def serialize(self):
         return {
