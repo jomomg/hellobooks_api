@@ -3,7 +3,6 @@
 from math import ceil
 import datetime
 from app.models import BorrowLog
-now = datetime.datetime.utcnow()
 
 
 def group(list_obj, group_len):
@@ -53,6 +52,7 @@ def return_book(user, book):
         return dict(message='This book has already been returned',
                     status_code=409)
 
+    now = datetime.datetime.utcnow()
     book_record.return_timestamp = now
     book_record.returned = True
     book_record.save()
