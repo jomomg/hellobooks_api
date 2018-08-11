@@ -17,7 +17,7 @@ def add_book():
     """Add a book to the library"""
 
     new_book = Book()
-    data = request.get_json(force=True)
+    data = request.data
     if not data or not data.get('title'):
         return jsonify(msg='You must provide at least the title of the book'), 400
     similar = Book.query.filter_by(isbn=data.get('isbn')).first()

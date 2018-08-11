@@ -17,14 +17,14 @@ def allow_pagination(func):
         limit = request.args.get('limit')
         page = 1 if not request.args.get('page') else request.args.get('page')
         if limit and not re.match(r'[0-9]', limit):
-            return jsonify(message='Please make sure that the limit parameter is valid'), 400
+            return jsonify(msg='Please make sure that the limit parameter is valid'), 400
         rv = func(*args, **kwargs)[0]
         results = json.loads(rv.data)
 
         if limit:
             paginated = get_paginated(limit, results, request.path, page)
             if not paginated:
-                return jsonify(message='The requested page was not found'), 404
+                return jsonify(msg='The requested page was not found'), 404
             return jsonify(paginated), 200
         return func(*args, **kwargs)
 
@@ -39,7 +39,7 @@ def admin_required(func):
         current_user_email = get_jwt_identity()
         user = User.get_by_email(current_user_email)
         if not user.is_admin:
-            return jsonify(message='You do not have permission to perform this action'), 403
+            return jsonify(msg='You do not have permission to perform this action'), 403
         return func(*args, **kwargs)
     return check_admin_status
 
@@ -53,10 +53,10 @@ def validate_email_password(func):
         password = request.data.get('password')
 
         if email and not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$', email):
-            return jsonify({'message': 'Please enter a valid email address'}), 400
+            return jsonify({'msg': 'Please enter a valid email address'}), 400
 
         if password and not re.match(r'^[a-zA-Z0-9*&#!@^._%+-]', password):
-            return jsonify({'message': 'Please enter a valid password'}), 400
+            return jsonify({'msg': 'Please enter a valid password'}), 400
 
         return func(*args, **kwargs)
     return validate

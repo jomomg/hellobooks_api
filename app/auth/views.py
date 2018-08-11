@@ -35,7 +35,7 @@ def register_user():
 
     if not email or not password or not confirm_password or not first_name or not last_name:
         return jsonify(
-            msg='An email, password, confirm password and first and last name are needed to register'
+            msg='Please fill in the required fields'
             ), 400
 
     if not user:
