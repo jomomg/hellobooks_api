@@ -1,6 +1,8 @@
 **.pyc
 migrations/
 .coverage
+.env
+.DS_Store
 .noseids
 **/__pycache__
 .idea
